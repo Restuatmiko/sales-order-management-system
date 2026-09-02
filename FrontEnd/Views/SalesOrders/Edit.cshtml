@@ -5,145 +5,715 @@
 
     var customers = ViewBag.Customers as List<FrontEnd.Models.CustomerResponse>
                      ?? new List<FrontEnd.Models.CustomerResponse>();
-
-    var salesOrderId = ViewBag.SalesOrderId;
 }
 
-<div class="container-fluid px-4 py-4">
+<style>
 
-    <!-- Page Header -->
-    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+    /* =========================================================
+           PAGE
+           ========================================================= */
 
-        <div>
-            <h2 class="fw-bold mb-1">Edit Sales Order</h2>
+    .create-page {
+        padding: 22px 30px;
+        background: #ffffff;
+    }
 
-            <p class="text-muted mb-0">
-                Perbarui informasi Sales Order dan detail item
-            </p>
-        </div>
-
-        <a asp-action="Index"
-           class="btn btn-outline-secondary">
-            ← Kembali
-        </a>
-
-    </div>
+    .create-wrapper {
+        max-width: 1350px;
+        margin: 0 auto;
+    }
 
 
-    <form asp-action="Edit"
-          asp-route-id="@salesOrderId"
-          method="post">
+    /* =========================================================
+           PAGE HEADER
+           ========================================================= */
 
-        @Html.AntiForgeryToken()
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 12px;
+    }
+
+    .page-title {
+        color: #203f67;
+        font-size: 20px;
+        font-weight: 700;
+        margin: 0;
+    }
+
+    .page-actions {
+        display: flex;
+        gap: 6px;
+    }
+
+    .btn-save-order {
+        background: #198754;
+        border: 1px solid #198754;
+        color: #ffffff;
+        border-radius: 4px;
+        padding: 6px 14px;
+        font-size: 12px;
+        font-weight: 600;
+        cursor: pointer;
+    }
+
+        .btn-save-order:hover {
+            background: #157347;
+            border-color: #157347;
+            color: #ffffff;
+        }
+
+    .btn-close-page {
+        background: #e5e5e5;
+        border: 1px solid #d2d2d2;
+        color: #444444;
+        border-radius: 4px;
+        padding: 6px 14px;
+        font-size: 12px;
+        font-weight: 600;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+        .btn-close-page:hover {
+            background: #d8d8d8;
+            color: #333333;
+        }
 
 
-        <!-- Order Information -->
-        <div class="card border-0 shadow-sm mb-4">
+    /* =========================================================
+           ORDER CARD
+           ========================================================= */
 
-            <div class="card-header bg-white border-0 px-4 py-3">
+    .order-card {
+        background: #ffffff;
+        border: 1px solid #c5d4e6;
+        border-radius: 5px;
+        overflow: hidden;
+        margin-bottom: 13px;
+    }
 
-                <h5 class="fw-semibold mb-1">
-                    Order Information
-                </h5>
+    .order-card-header {
+        background: #203f67;
+        color: #ffffff;
+        padding: 8px 14px;
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: .2px;
+    }
 
-                <small class="text-muted">
-                    Informasi utama Sales Order
-                </small>
+    .order-card-body {
+        padding: 14px;
+    }
+
+
+    /* =========================================================
+           ORDER HEADER
+           ========================================================= */
+
+    .header-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        column-gap: 38px;
+        row-gap: 8px;
+    }
+
+    .form-group {
+        display: flex;
+        align-items: center;
+    }
+
+    .form-label-custom {
+        width: 105px;
+        flex-shrink: 0;
+        color: #555555;
+        font-size: 12px;
+        font-weight: 500;
+        margin: 0 8px 0 0;
+        text-align: right;
+    }
+
+    .required {
+        color: #dc3545;
+    }
+
+    .form-control-custom,
+    .form-select-custom {
+        height: 32px;
+        border: 1px solid #aebdce;
+        border-radius: 3px;
+        padding: 5px 8px;
+        font-size: 12px;
+        color: #444444;
+        background: #ffffff;
+        outline: none;
+        width: 100%;
+    }
+
+        .form-control-custom:focus,
+        .form-select-custom:focus {
+            border-color: #203f67;
+            box-shadow: none;
+        }
+
+        .form-control-custom[readonly] {
+            background-color: #f3f5f7;
+            color: #555555;
+            cursor: not-allowed;
+        }
+
+    .readonly-note {
+        margin-left: 6px;
+        color: #999999;
+        font-size: 10px;
+        white-space: nowrap;
+    }
+
+    .address-field {
+        grid-column: 1 / -1;
+        width: 75%;
+    }
+
+        .address-field .form-label-custom {
+            width: 105px;
+        }
+
+    .validation-message {
+        color: #dc3545;
+        font-size: 11px;
+        margin-left: 5px;
+    }
+
+
+    /* =========================================================
+           ORDER DETAIL
+           ========================================================= */
+
+    .detail-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 9px;
+    }
+
+    .detail-title {
+        color: #555555;
+        font-size: 12px;
+        font-weight: 700;
+        margin: 0;
+        text-transform: uppercase;
+    }
+
+    .btn-add-item {
+        background: #ffffff;
+        border: 1px solid #203f67;
+        color: #203f67;
+        border-radius: 4px;
+        padding: 5px 11px;
+        font-size: 12px;
+        font-weight: 600;
+        cursor: pointer;
+    }
+
+        .btn-add-item:hover {
+            background: #203f67;
+            color: #ffffff;
+        }
+
+
+    /* =========================================================
+           ITEM TABLE
+           ========================================================= */
+
+    .item-table-wrapper {
+        border: 1px solid #c5d4e6;
+        overflow-x: auto;
+    }
+
+    .item-table {
+        width: 100%;
+        margin: 0;
+        border-collapse: collapse;
+        font-size: 12px;
+    }
+
+        .item-table thead th {
+            background: #e5ebf3;
+            color: #203f67;
+            font-weight: 700;
+            border: 1px solid #c1cede;
+            padding: 7px 8px;
+            height: 32px;
+            white-space: nowrap;
+        }
+
+        .item-table tbody td {
+            border: 1px solid #d0dbe8;
+            padding: 5px 7px;
+            height: 34px;
+            vertical-align: middle;
+            color: #444444;
+        }
+
+        .item-table tbody tr:nth-child(even) {
+            background: #f4f6f9;
+        }
+
+        /* Baris input/edit aktif */
+        .item-table tbody tr.input-row,
+        .item-table tbody tr.editing-row {
+            background: #fffbea;
+        }
+
+            .item-table tbody tr.input-row td,
+            .item-table tbody tr.editing-row td {
+                border-color: #e8dda0;
+            }
+
+
+    /* =========================================================
+           COLUMN WIDTH
+           ========================================================= */
+
+    .number-column {
+        width: 42px;
+        text-align: center;
+    }
+
+    .item-name-column {
+        min-width: 250px;
+    }
+
+    .qty-column {
+        width: 90px;
+    }
+
+    .price-column {
+        width: 165px;
+    }
+
+    .total-column {
+        width: 165px;
+    }
+
+    .action-column {
+        width: 105px;
+        text-align: center;
+    }
+
+
+    /* =========================================================
+           ITEM INPUT
+           ========================================================= */
+
+    .item-input {
+        width: 100%;
+        height: 29px;
+        border: 1px solid #aebdce;
+        border-radius: 3px;
+        padding: 4px 7px;
+        font-size: 12px;
+        color: #444444;
+        background: #ffffff;
+        outline: none;
+    }
+
+        .item-input:focus {
+            border-color: #203f67;
+            box-shadow: none;
+        }
+
+    .item-table .input-group {
+        display: flex;
+    }
+
+    .item-table .input-group-text {
+        height: 29px;
+        padding: 4px 7px;
+        font-size: 11px;
+        background: #f1f3f5;
+        border: 1px solid #aebdce;
+        border-right: none;
+        border-radius: 3px 0 0 3px;
+    }
+
+    .item-table .input-group .form-control {
+        height: 29px;
+        font-size: 12px;
+        border-radius: 0 3px 3px 0;
+    }
+
+    .item-total {
+        font-weight: 600;
+        color: #333333;
+        white-space: nowrap;
+    }
+
+    .inline-error {
+        color: #dc3545;
+        font-size: 10px;
+        margin-top: 2px;
+    }
+
+
+    /* =========================================================
+           ACTION BUTTONS
+           ========================================================= */
+
+    .item-actions {
+        white-space: nowrap;
+        text-align: center;
+    }
+
+    .btn-row {
+        width: 25px;
+        height: 25px;
+        border-radius: 3px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0;
+        font-size: 13px;
+        cursor: pointer;
+    }
+
+    .btn-row-save {
+        background: #198754;
+        border: 1px solid #198754;
+        color: #ffffff;
+    }
+
+        .btn-row-save:hover {
+            background: #157347;
+        }
+
+    .btn-row-cancel {
+        background: #e7e7e7;
+        border: 1px solid #cccccc;
+        color: #444444;
+    }
+
+        .btn-row-cancel:hover {
+            background: #d7d7d7;
+        }
+
+    .btn-row-edit {
+        background: transparent;
+        border: none;
+        color: #f47b43;
+        font-size: 14px;
+    }
+
+        .btn-row-edit:hover {
+            color: #d95d27;
+        }
+
+    .btn-row-delete {
+        background: transparent;
+        border: none;
+        color: #888888;
+        font-size: 13px;
+    }
+
+        .btn-row-delete:hover {
+            color: #d9534f;
+        }
+
+
+    /* =========================================================
+           EMPTY STATE
+           ========================================================= */
+
+    .empty-items {
+        text-align: center;
+        color: #999999;
+    }
+
+        .empty-items td {
+            padding: 20px !important;
+            font-style: italic;
+        }
+
+
+    /* =========================================================
+           GRAND TOTAL
+           ========================================================= */
+
+    .grand-total-wrapper {
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+        margin-top: 10px;
+        border-top: 3px solid #203f67;
+        background: #e5ebf3;
+        padding: 8px 12px;
+    }
+
+    .grand-total-label {
+        color: #203f67;
+        font-size: 13px;
+        font-weight: 700;
+        margin-right: 15px;
+    }
+
+    .grand-total-value {
+        min-width: 170px;
+        text-align: right;
+        color: #203f67;
+        font-size: 14px;
+        font-weight: 700;
+    }
+
+    .grand-total-note {
+        text-align: left;
+        margin-top: 5px;
+        color: #999999;
+        font-size: 10px;
+        font-style: italic;
+    }
+
+
+    /* =========================================================
+           BOTTOM ACTION
+           ========================================================= */
+
+    .bottom-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 6px;
+        margin-top: 12px;
+    }
+
+
+    /* =========================================================
+           ERROR
+           ========================================================= */
+
+    .notification {
+        border-radius: 4px;
+        font-size: 12px;
+        margin-bottom: 12px;
+    }
+
+
+    /* =========================================================
+           RESPONSIVE
+           ========================================================= */
+
+    @@media (max-width: 768px) {
+
+        .create-page {
+            padding: 15px;
+        }
+
+        .page-header {
+            align-items: flex-start;
+            gap: 10px;
+        }
+
+        .header-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .address-field {
+            width: 100%;
+        }
+
+        .form-group {
+            align-items: flex-start;
+            flex-direction: column;
+        }
+
+        .form-label-custom {
+            width: auto;
+            text-align: left;
+            margin-bottom: 4px;
+        }
+
+        .readonly-note {
+            margin-left: 0;
+            margin-top: 3px;
+        }
+    }
+
+</style>
+
+
+<div class="create-page">
+
+    <div class="create-wrapper">
+
+        <!-- =====================================================
+             PAGE HEADER
+             ===================================================== -->
+
+        <div class="page-header">
+
+            <h1 class="page-title">
+                Edit Sales Order
+            </h1>
+
+            <div class="page-actions">
+
+                <button type="submit"
+                        form="salesOrderForm"
+                        class="btn-save-order">
+                    💾 Save Changes
+                </button>
+
+                <a asp-action="Index"
+                   class="btn-close-page">
+                    ✕ Close
+                </a>
 
             </div>
 
-
-            <div class="card-body px-4 pb-4">
-
-                <div class="row g-3">
-
-                    <!-- SO Number -->
-                    <div class="col-md-6">
-
-                        <label class="form-label fw-semibold">
-                            SO No
-                        </label>
-
-                        <input type="text"
-                               class="form-control bg-light"
-                               value="@Model.SO_NO"
-                               readonly />
-
-                        <input type="hidden"
-                               asp-for="SO_NO" />
-
-                        <small class="text-muted">
-                            Nomor Sales Order tidak dapat diubah.
-                        </small>
-
-                    </div>
+        </div>
 
 
-                    <!-- Order Date -->
-                    <div class="col-md-6">
+        <!-- =====================================================
+             ERROR MESSAGE
+             ===================================================== -->
+        @if (ViewBag.Error != null)
+        {
+            <div class="alert alert-danger notification">
+                <strong>Gagal!</strong>
+                @ViewBag.Error
+            </div>
+        }
 
-                        <label asp-for="ORDER_DATE"
-                               class="form-label fw-semibold">
-                            Order Date
-                        </label>
-
-                        <input asp-for="ORDER_DATE"
-                               type="date"
-                               class="form-control" />
-
-                        <span asp-validation-for="ORDER_DATE"
-                              class="text-danger small">
-                        </span>
-
-                    </div>
+        @if (TempData["Error"] != null)
+        {
+            <div class="alert alert-danger notification">
+                <strong>Gagal!</strong>
+                @TempData["Error"]
+            </div>
+        }
 
 
-                    <!-- Customer -->
-                    <div class="col-md-6">
+        <!-- =====================================================
+             MAIN FORM
+             ===================================================== -->
 
-                        <label asp-for="COM_CUSTOMER_ID"
-                               class="form-label fw-semibold">
-                            Customer
-                        </label>
+        <form asp-action="Edit"
+              method="post"
+              id="salesOrderForm">
 
-                        <select asp-for="COM_CUSTOMER_ID"
-                                class="form-select">
+            @Html.AntiForgeryToken()
 
-                            <option value="">
-                                -- Pilih Customer --
-                            </option>
 
-                            @foreach (var customer in customers)
-                            {
-                                <option value="@customer.COM_CUSTOMER_ID">
-                                    @customer.CUSTOMER_NAME
+            <!-- =================================================
+                 ORDER HEADER
+                 ================================================= -->
+
+            <div class="order-card">
+
+                <div class="order-card-header">
+                    ORDER HEADER
+                </div>
+
+                <div class="order-card-body">
+
+                    <div class="header-grid">
+
+
+                        <!-- Order Number -->
+
+                        <div class="form-group">
+
+                            <label class="form-label-custom">
+                                Order Number <span class="required">*</span>
+                            </label>
+
+                            <input asp-for="SO_NO"
+                                   class="form-control-custom"
+                                   readonly />
+
+                            <span class="readonly-note">
+                                (tidak dapat diubah)
+                            </span>
+
+                            <span asp-validation-for="SO_NO"
+                                  class="validation-message">
+                            </span>
+
+                        </div>
+
+
+                        <!-- Order Date -->
+
+                        <div class="form-group">
+
+                            <label class="form-label-custom">
+                                Order Date <span class="required">*</span>
+                            </label>
+
+                            <input asp-for="ORDER_DATE"
+                                   type="date"
+                                   class="form-control-custom" />
+
+                            <span asp-validation-for="ORDER_DATE"
+                                  class="validation-message">
+                            </span>
+
+                        </div>
+
+
+                        <!-- Customer -->
+
+                        <div class="form-group">
+
+                            <label class="form-label-custom">
+                                Customer <span class="required">*</span>
+                            </label>
+
+                            <select asp-for="COM_CUSTOMER_ID"
+                                    class="form-select-custom">
+
+                                <option value="">
+                                    ▼ Pilih Pelanggan
                                 </option>
-                            }
 
-                        </select>
+                                @foreach (var customer in customers)
+                                {
+                                    <option value="@customer.COM_CUSTOMER_ID">
+                                        @customer.CUSTOMER_NAME
+                                    </option>
+                                }
 
-                        <span asp-validation-for="COM_CUSTOMER_ID"
-                              class="text-danger small">
-                        </span>
+                            </select>
 
-                    </div>
+                            <span class="readonly-note">
+                                (data dari Customer Service)
+                            </span>
+
+                            <span asp-validation-for="COM_CUSTOMER_ID"
+                                  class="validation-message">
+                            </span>
+
+                        </div>
 
 
-                    <!-- Address -->
-                    <div class="col-md-6">
+                        <!-- Address -->
 
-                        <label asp-for="ADDRESS"
-                               class="form-label fw-semibold">
-                            Address
-                        </label>
+                        <div class="form-group address-field">
 
-                        <input asp-for="ADDRESS"
-                               class="form-control"
-                               placeholder="Masukkan alamat customer" />
+                            <label class="form-label-custom">
+                                Address
+                            </label>
 
-                        <span asp-validation-for="ADDRESS"
-                              class="text-danger small">
-                        </span>
+                            <input asp-for="ADDRESS"
+                                   class="form-control-custom"
+                                   placeholder="____________________________" />
+
+                            <span asp-validation-for="ADDRESS"
+                                  class="validation-message">
+                            </span>
+
+                        </div>
 
                     </div>
 
@@ -151,228 +721,254 @@
 
             </div>
 
-        </div>
 
+            <!-- =================================================
+                 ORDER DETAIL
+                 ================================================= -->
 
-        <!-- Items -->
-        <div class="card border-0 shadow-sm mb-4">
+            <div class="order-card">
 
-            <div class="card-header bg-white border-0 px-4 py-3">
+                <div class="order-card-body">
 
-                <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+                    <div class="detail-header">
 
-                    <div>
-                        <h5 class="fw-semibold mb-1">
-                            Order Items
-                        </h5>
-
-                        <small class="text-muted">
-                            Item lama dapat diedit, dihapus, atau ditambahkan
-                        </small>
-                    </div>
-
-                    <div class="d-flex align-items-center gap-2">
-
-                        <span class="badge bg-light text-dark border">
-                            <span id="itemCount">@Model.Items.Count</span> Item
-                        </span>
+                        <h2 class="detail-title">
+                            ORDER DETAIL (ITEMS)
+                        </h2>
 
                         <button type="button"
-                                class="btn btn-sm btn-primary"
-                                id="addItemButton">
+                                id="btnAddItem"
+                                class="btn-add-item"
+                                onclick="addItem()">
                             + Add Item
                         </button>
 
                     </div>
 
-                </div>
 
-            </div>
+                    <!-- ITEM TABLE -->
 
+                    <div class="item-table-wrapper">
 
-            <div class="card-body p-0">
+                        <table class="item-table">
 
-                <div class="table-responsive">
+                            <thead>
 
-                    <table class="table table-hover align-middle mb-0">
-
-                        <thead class="table-light">
-
-                            <tr>
-
-                                <th class="ps-4 text-center"
-                                    style="width: 70px;">
-                                    #
-                                </th>
-
-                                <th>
-                                    Item Name
-                                </th>
-
-                                <th style="width: 180px;">
-                                    Quantity
-                                </th>
-
-                                <th style="width: 230px;">
-                                    Price
-                                </th>
-
-                                <th class="text-center"
-                                    style="width: 100px;">
-                                    Action
-                                </th>
-
-                            </tr>
-
-                        </thead>
-
-
-                        <tbody id="itemsBody">
-
-                            @for (int i = 0; i < Model.Items.Count; i++)
-                            {
                                 <tr>
 
-                                    <td class="ps-4 text-center text-muted item-number">
-                                        @(i + 1)
-                                    </td>
+                                    <th class="number-column">
+                                        #
+                                    </th>
 
+                                    <th class="item-name-column">
+                                        Item Name *
+                                    </th>
 
-                                    <td>
+                                    <th class="qty-column">
+                                        QTY *
+                                    </th>
 
-                                        <input asp-for="Items[i].ITEM_NAME"
-                                               class="form-control ITEM_NAME"
-                                               placeholder="Nama item"
-                                               required />
+                                    <th class="price-column">
+                                        Price *
+                                    </th>
 
-                                    </td>
+                                    <th class="total-column">
+                                        Total
+                                    </th>
 
-
-                                    <td>
-
-                                        <input asp-for="Items[i].QUANTITY"
-                                               type="number"
-                                               min="1"
-                                               class="form-control QUANTITY"
-                                               placeholder="0"
-                                               required />
-
-                                    </td>
-
-
-                                    <td>
-
-                                        <div class="input-group">
-
-                                            <span class="input-group-text">
-                                                Rp
-                                            </span>
-
-                                            <input asp-for="Items[i].PRICE"
-                                                   type="number"
-                                                   min="0.01"
-                                                   step="0.01"
-                                                   class="form-control PRICE"
-                                                   placeholder="0"
-                                                   value="@Model.Items[i].PRICE.ToString(System.Globalization.CultureInfo.InvariantCulture)"
-                                                   required />
-
-                                        </div>
-
-                                    </td>
-
-
-                                    <td class="text-center">
-
-                                        <button type="button"
-                                                class="btn btn-sm btn-outline-danger delete-item"
-                                                title="Hapus item">
-                                            🗑
-                                        </button>
-
-                                    </td>
+                                    <th class="action-column">
+                                        Action
+                                    </th>
 
                                 </tr>
-                            }
 
-                        </tbody>
-
-                    </table>
-
-                </div>
+                            </thead>
 
 
-                <!-- Empty Item State -->
-                <div id="emptyItemsMessage"
-                     class="text-center py-4 text-muted"
-                     style="display: none;">
+                            <tbody id="itemsBody">
 
-                    <div class="mb-2">
-                        Belum ada item.
+                                @if (Model.Items != null &&
+                                                                Model.Items.Count > 0)
+                                {
+                                    for (int i = 0;
+                                    i < Model.Items.Count;
+                                    i++)
+                                    {
+                                        var item = Model.Items[i];
+
+                                        <tr data-mode="display"
+                                            data-index="@i"
+                                            data-saved-item-name="@item.ITEM_NAME"
+                                            data-saved-quantity="@item.QUANTITY"
+                                            data-saved-price="@item.PRICE"
+                                            data-saved-total="@(item.QUANTITY* item.PRICE)">
+
+                                            <!-- NUMBER -->
+
+                                            <td class="number-column item-number">
+                                                @(i + 1)
+                                            </td>
+
+
+                                            <!-- ITEM NAME -->
+
+                                            <td>
+
+                                                <input type="hidden"
+                                                       name="Items[@i].ITEM_NAME"
+                                                       class="saved-item-name"
+                                                       value="@item.ITEM_NAME" />
+
+                                                <span>
+                                                    @item.ITEM_NAME
+                                                </span>
+
+                                            </td>
+
+
+                                            <!-- QUANTITY -->
+
+                                            <td>
+
+                                                <input type="hidden"
+                                                       name="Items[@i].QUANTITY"
+                                                       class="saved-item-quantity"
+                                                       value="@item.QUANTITY" />
+
+                                                <span>
+                                                    @item.QUANTITY
+                                                </span>
+
+                                            </td>
+
+
+                                            <!-- PRICE -->
+
+                                            <td>
+
+                                                <input type="hidden"
+                                                       name="Items[@i].PRICE"
+                                                       class="saved-item-price"
+                                                       value="@item.PRICE" />
+
+                                                <span>
+                                                    Rp @item.PRICE.ToString("N0")
+                                                </span>
+
+                                            </td>
+
+
+                                            <!-- TOTAL -->
+
+                                            <td>
+
+                                                <input type="hidden"
+                                                       class="saved-item-total"
+                                                       value="@(item.QUANTITY* item.PRICE)" />
+
+                                                <span class="item-total">
+                                                    Rp @((item.QUANTITY * item.PRICE).ToString("N0"))
+                                                </span>
+
+                                            </td>
+
+
+                                            <!-- ACTION -->
+
+                                            <td class="item-actions">
+
+                                                <button type="button"
+                                                        class="btn-row btn-row-edit"
+                                                        onclick="editItem(this)"
+                                                        title="Edit">
+                                                    ✏
+                                                </button>
+
+                                                <button type="button"
+                                                        class="btn-row btn-row-delete"
+                                                        onclick="removeItem(this)"
+                                                        title="Hapus">
+                                                    🗑
+                                                </button>
+
+                                            </td>
+
+                                        </tr>
+                                    }
+                                }
+
+                            </tbody>
+
+                        </table>
+
                     </div>
 
-                    <small>
-                        Klik "Add Item" untuk menambahkan item.
-                    </small>
 
-                </div>
+                    <!-- EMPTY STATE -->
 
-            </div>
+                    <div id="emptyItemMessage"
+                         class="empty-items"
+                         style="@(Model.Items != null && Model.Items.Count > 0 ? "display:none;" : "display:block;")">
 
-        </div>
+                        <div>
+                            Belum ada item.
+                            Klik <strong>+ Add Item</strong>
+                            untuk menambahkan.
+                        </div>
+
+                    </div>
 
 
-        <!-- Grand Total -->
-        <div class="card border-0 shadow-sm mb-4">
+                    <!-- GRAND TOTAL -->
 
-            <div class="card-body px-4 py-3">
+                    <div class="grand-total-wrapper">
 
-                <div class="d-flex justify-content-between align-items-center">
-
-                    <div>
-
-                        <small class="text-muted">
+                        <span class="grand-total-label">
                             Grand Total
-                        </small>
+                        </span>
 
-                        <div class="fw-semibold">
-                            Total keseluruhan Sales Order
-                        </div>
+                        <span class="grand-total-value">
+                            Rp
+                            <span id="grandTotal">
+                                0
+                            </span>
+                        </span>
 
                     </div>
 
 
-                    <div class="text-end">
-
-                        <div class="fs-4 fw-bold">
-                            Rp <span id="grandTotal">0</span>
-                        </div>
-
+                    <div class="grand-total-note">
+                        * Baris kuning = mode input aktif.
+                        TOTAL per baris dan Grand Total dihitung oleh service,
+                        bukan JavaScript front-end.
                     </div>
 
                 </div>
 
             </div>
 
-        </div>
 
+            <!-- =================================================
+                 BOTTOM ACTION
+                 ================================================= -->
 
-        <!-- Action Buttons -->
-        <div class="d-flex justify-content-end gap-2">
+            <div class="bottom-actions">
 
-            <a asp-action="Index"
-               class="btn btn-outline-secondary px-4">
-                Batal
-            </a>
+                <a asp-action="Index"
+                   class="btn-close-page">
+                    ✕ Close
+                </a>
 
-            <button type="submit"
-                    class="btn btn-primary px-4">
-                Update Sales Order
-            </button>
+                <button type="submit"
+                        class="btn-save-order">
+                    💾 Save Changes
+                </button>
 
-        </div>
+            </div>
 
-    </form>
+        </form>
+
+    </div>
 
 </div>
 
@@ -383,175 +979,67 @@
 
     <script>
 
-        /*
-         * ============================================================
-         * ITEM MANAGEMENT
-         * ============================================================
-         *
-         * JavaScript hanya digunakan untuk:
-         * - menambah baris item
-         * - menghapus baris item
-         * - merapikan index Items[i]
-         * - meminta Grand Total kepada backend
-         *
-         * Tidak melakukan perhitungan QUANTITY * PRICE.
-         */
+        /* =========================================================
+           GLOBAL INDEX
+           ========================================================= */
+
+        let itemIndex =
+            document.querySelectorAll(
+                "#itemsBody tr"
+            ).length;
 
 
-        const itemsBody =
-            document.getElementById("itemsBody");
-
-        const addItemButton =
-            document.getElementById("addItemButton");
-
-        const itemCount =
-            document.getElementById("itemCount");
-
-        const emptyItemsMessage =
-            document.getElementById("emptyItemsMessage");
-
-
-        /*
-         * Update nomor item dan nama input.
-         *
-         * Contoh:
-         *
-         * Items[0].ITEM_NAME
-         * Items[0].QUANTITY
-         * Items[0].PRICE
-         *
-         * Items[1].ITEM_NAME
-         * Items[1].QUANTITY
-         * Items[1].PRICE
-         *
-         * dan seterusnya.
-         *
-         * Ini penting agar ASP.NET Core Model Binding
-         * menerima List<...> dengan benar setelah item dihapus.
-         */
-
-        function renumberItems() {
-
-            const rows =
-                itemsBody.querySelectorAll("tr");
-
-
-            rows.forEach((row, index) => {
-
-                /*
-                 * Nomor tampilan
-                 */
-
-                const number =
-                    row.querySelector(".item-number");
-
-                if (number) {
-                    number.textContent = index + 1;
-                }
-
-
-                /*
-                 * Update nama input
-                 */
-
-                const itemName =
-                    row.querySelector(".ITEM_NAME");
-
-                if (itemName) {
-                    itemName.name =
-                        `Items[${index}].ITEM_NAME`;
-
-                    itemName.id =
-                        `Items_${index}__ITEM_NAME`;
-                }
-
-
-                const quantity =
-                    row.querySelector(".QUANTITY");
-
-                if (quantity) {
-                    quantity.name =
-                        `Items[${index}].QUANTITY`;
-
-                    quantity.id =
-                        `Items_${index}__QUANTITY`;
-                }
-
-
-                const price =
-                    row.querySelector(".PRICE");
-
-                if (price) {
-                    price.name =
-                        `Items[${index}].PRICE`;
-
-                    price.id =
-                        `Items_${index}__PRICE`;
-                }
-
-            });
-
-
-            /*
-             * Update jumlah item
-             */
-
-            itemCount.textContent =
-                rows.length;
-
-
-            /*
-             * Tampilkan pesan jika tidak ada item.
-             */
-
-            if (rows.length === 0) {
-
-                emptyItemsMessage.style.display =
-                    "block";
-
-            }
-            else {
-
-                emptyItemsMessage.style.display =
-                    "none";
-
-            }
-
-        }
-
-
-        /*
-         * Membuat baris item baru.
-         */
+        /* =========================================================
+           ADD ITEM
+           ========================================================= */
 
         function addItem() {
+
+            const tbody =
+                document.getElementById("itemsBody");
+
+            const emptyMessage =
+                document.getElementById("emptyItemMessage");
+
+            const index =
+                itemIndex++;
 
             const row =
                 document.createElement("tr");
 
+            row.dataset.mode = "input";
+            row.dataset.index = index;
+
+            row.className = "input-row";
 
             row.innerHTML = `
 
-                <td class="ps-4 text-center text-muted item-number">
-                    1
+                <td class="number-column item-number">
+                    ${tbody.children.length + 1}
                 </td>
 
                 <td>
 
                     <input type="text"
-                           class="form-control ITEM_NAME"
-                           placeholder="Nama item"
-                           required />
+                           name="Items[${index}].ITEM_NAME"
+                           class="item-input item-name"
+                           placeholder="Nama barang..."
+                           autocomplete="off" />
+
+                    <div class="inline-error item-error"></div>
 
                 </td>
 
                 <td>
 
                     <input type="number"
+                           name="Items[${index}].QUANTITY"
+                           class="item-input item-quantity"
                            min="1"
-                           class="form-control QUANTITY"
-                           placeholder="0"
-                           required />
+                           step="1"
+                           placeholder="0" />
+
+                    <div class="inline-error item-error"></div>
 
                 </td>
 
@@ -564,172 +1052,937 @@
                         </span>
 
                         <input type="number"
-                               min="0.01"
+                               name="Items[${index}].PRICE"
+                               class="form-control item-price"
+                               min="1"
                                step="0.01"
-                               class="form-control PRICE"
-                               placeholder="0"
-                               required />
+                               placeholder="0" />
 
                     </div>
 
+                    <div class="inline-error item-error"></div>
+
                 </td>
 
-                <td class="text-center">
+                <td>
+
+                    <span class="item-total text-muted">
+                        0
+                    </span>
+
+                </td>
+
+                <td class="item-actions">
 
                     <button type="button"
-                            class="btn btn-sm btn-outline-danger delete-item"
-                            title="Hapus item">
-                        🗑
+                            class="btn-row btn-row-save"
+                            onclick="saveItem(this)"
+                            title="Simpan Baris">
+                        ✓
+                    </button>
+
+                    <button type="button"
+                            class="btn-row btn-row-cancel"
+                            onclick="cancelItem(this)"
+                            title="Batal">
+                        ✕
                     </button>
 
                 </td>
 
             `;
 
+            tbody.appendChild(row);
 
-            itemsBody.appendChild(row);
+            emptyMessage.style.display = "none";
 
+            updateItemNumbers();
 
-            /*
-             * Rapikan index setelah item ditambahkan.
-             */
-
-            renumberItems();
-
-
-            /*
-             * Hitung ulang Grand Total melalui backend.
-             */
-
-            calculateGrandTotal();
+            row.querySelector(".item-name")?.focus();
+        }
 
 
-            /*
-             * Fokus ke Item Name item baru.
-             */
+        /* =========================================================
+           SAVE ITEM
+           ========================================================= */
 
-            row.querySelector(".ITEM_NAME")?.focus();
+        async function saveItem(button) {
+
+            const row =
+                button.closest("tr");
+
+            if (!row) {
+                return;
+            }
+
+            const itemNameInput =
+                row.querySelector(".item-name");
+
+            const quantityInput =
+                row.querySelector(".item-quantity");
+
+            const priceInput =
+                row.querySelector(".item-price");
+
+            const itemName =
+                itemNameInput?.value.trim() || "";
+
+            const quantity =
+                parseInt(
+                    quantityInput?.value || "0"
+                );
+
+            const price =
+                parseFloat(
+                    priceInput?.value || "0"
+                );
+
+
+            clearItemErrors(row);
+
+
+            /* =====================================================
+               VALIDATION
+               ===================================================== */
+
+            if (!itemName) {
+
+                showItemError(
+                    row,
+                    "Item Name wajib diisi."
+                );
+
+                itemNameInput?.focus();
+
+                return;
+            }
+
+
+            if (!quantity || quantity <= 0) {
+
+                showItemError(
+                    row,
+                    "Quantity harus lebih dari 0."
+                );
+
+                quantityInput?.focus();
+
+                return;
+            }
+
+
+            if (!price || price <= 0) {
+
+                showItemError(
+                    row,
+                    "Price harus lebih dari 0."
+                );
+
+                priceInput?.focus();
+
+                return;
+            }
+
+
+            try {
+
+                button.disabled = true;
+
+
+                /* =================================================
+                   REQUEST KE SALES ORDER SERVICE
+                   ================================================= */
+
+                const response =
+                    await fetch(
+                        "/SalesOrders/Calculate",
+                        {
+                            method: "POST",
+
+                            headers: {
+                                "Content-Type":
+                                    "application/json"
+                            },
+
+                            body: JSON.stringify({
+
+                                Items: [
+
+                                    {
+                                        ITEM_NAME:
+                                            itemName,
+
+                                        QUANTITY:
+                                            quantity,
+
+                                        PRICE:
+                                            price
+                                    }
+
+                                ]
+
+                            })
+
+                        }
+                    );
+
+
+                const result =
+                    await response.json();
+
+
+                /* =================================================
+                   SERVICE ERROR
+                   ================================================= */
+
+                if (!response.ok) {
+
+                    showItemError(
+                        row,
+                        result.message ||
+                        result.errors?.[0] ||
+                        "Data item tidak valid."
+                    );
+
+                    return;
+                }
+
+
+                /* =================================================
+                   TOTAL DARI BACKEND
+                   ================================================= */
+
+                const total =
+                    Number(
+                        result.grandTotal || 0
+                    );
+
+
+                /* =================================================
+                   SIMPAN STATE
+                   ================================================= */
+
+                row.dataset.mode =
+                    "display";
+
+                row.classList.remove(
+                    "input-row",
+                    "editing-row"
+                );
+
+                row.dataset.savedItemName =
+                    itemName;
+
+                row.dataset.savedQuantity =
+                    quantity;
+
+                row.dataset.savedPrice =
+                    price;
+
+                row.dataset.savedTotal =
+                    total;
+
+
+                /* =================================================
+                   ITEM NAME
+                   ================================================= */
+
+                row.children[1].innerHTML = `
+
+                    <input type="hidden"
+                           name=""
+                           class="saved-item-name"
+                           value="${escapeHtmlAttribute(itemName)}">
+
+                    <span>
+                        ${escapeHtml(itemName)}
+                    </span>
+
+                `;
+
+
+                /* =================================================
+                   QUANTITY
+                   ================================================= */
+
+                row.children[2].innerHTML = `
+
+                    <input type="hidden"
+                           name=""
+                           class="saved-item-quantity"
+                           value="${quantity}">
+
+                    <span>
+                        ${quantity}
+                    </span>
+
+                `;
+
+
+                /* =================================================
+                   PRICE
+                   ================================================= */
+
+                row.children[3].innerHTML = `
+
+                    <input type="hidden"
+                           name=""
+                           class="saved-item-price"
+                           value="${price}">
+
+                    <span>
+                        Rp ${formatNumber(price)}
+                    </span>
+
+                `;
+
+
+                /* =================================================
+                   TOTAL
+                   ================================================= */
+
+                row.children[4].innerHTML = `
+
+                    <input type="hidden"
+                           class="saved-item-total"
+                           value="${total}">
+
+                    <span class="item-total">
+                        Rp ${formatNumber(total)}
+                    </span>
+
+                `;
+
+
+                /* =================================================
+                   ACTION
+                   ================================================= */
+
+                row.children[5].innerHTML = `
+
+                    <button type="button"
+                            class="btn-row btn-row-edit"
+                            onclick="editItem(this)"
+                            title="Edit">
+                        ✏
+                    </button>
+
+                    <button type="button"
+                            class="btn-row btn-row-delete"
+                            onclick="removeItem(this)"
+                            title="Hapus">
+                        🗑
+                    </button>
+
+                `;
+
+
+                reindexItems();
+
+                await calculateGrandTotal();
+
+                updateItemNumbers();
+
+            }
+            catch (error) {
+
+                console.error(error);
+
+                showItemError(
+                    row,
+                    "Gagal menghubungi Sales Order Service."
+                );
+
+            }
+            finally {
+
+                button.disabled = false;
+
+            }
 
         }
 
 
-        /*
-         * Tombol Add Item
-         */
+        /* =========================================================
+           CANCEL NEW ITEM
+           ========================================================= */
 
-        addItemButton.addEventListener(
-            "click",
-            function () {
+        function cancelItem(button) {
 
-                addItem();
+            const row =
+                button.closest("tr");
 
+            if (!row) {
+                return;
             }
-        );
+
+            row.remove();
+
+            reindexItems();
+
+            updateItemNumbers();
+
+            checkEmptyItems();
+
+            calculateGrandTotal();
+        }
 
 
-        /*
-         * Tombol Delete Item.
-         *
-         * Tidak menggunakan popup karena specification
-         * menyatakan delete item pada form tidak memerlukan
-         * popup konfirmasi.
-         */
+        /* =========================================================
+           EDIT ITEM
+           ========================================================= */
 
-        itemsBody.addEventListener(
-            "click",
-            function (event) {
+        function editItem(button) {
 
-                const deleteButton =
-                    event.target.closest(".delete-item");
+            const row =
+                button.closest("tr");
 
-
-                if (!deleteButton) {
-                    return;
-                }
-
-
-                const row =
-                    deleteButton.closest("tr");
-
-
-                if (!row) {
-                    return;
-                }
-
-
-                row.remove();
-
-
-                /*
-                 * Rapikan kembali index.
-                 */
-
-                renumberItems();
-
-
-                /*
-                 * Hitung ulang Grand Total melalui backend.
-                 */
-
-                calculateGrandTotal();
-
+            if (!row) {
+                return;
             }
-        );
 
 
-        /*
-         * ============================================================
-         * GRAND TOTAL
-         * ============================================================
-         *
-         * Perhitungan dilakukan SalesOrderService.
-         *
-         * Frontend TIDAK menghitung:
-         *
-         * quantity * price
-         *
-         * Frontend hanya mengirim item ke backend dan
-         * menampilkan grandTotal dari response.
-         */
+            const itemName =
+                row.dataset.savedItemName
+                ||
+                row.querySelector(
+                    ".saved-item-name"
+                )?.value
+                ||
+                "";
 
+
+            const quantity =
+                row.dataset.savedQuantity
+                ||
+                row.querySelector(
+                    ".saved-item-quantity"
+                )?.value
+                ||
+                "";
+
+
+            const price =
+                row.dataset.savedPrice
+                ||
+                row.querySelector(
+                    ".saved-item-price"
+                )?.value
+                ||
+                "";
+
+
+            const total =
+                row.dataset.savedTotal
+                ||
+                row.querySelector(
+                    ".saved-item-total"
+                )?.value
+                ||
+                "0";
+
+
+            /* =====================================================
+               SIMPAN STATE LAMA
+               ===================================================== */
+
+            row.dataset.oldItemName =
+                itemName;
+
+            row.dataset.oldQuantity =
+                quantity;
+
+            row.dataset.oldPrice =
+                price;
+
+            row.dataset.oldTotal =
+                total;
+
+            row.dataset.mode =
+                "editing";
+
+            row.classList.add(
+                "editing-row"
+            );
+
+
+            /* =====================================================
+               ITEM NAME
+               ===================================================== */
+
+            row.children[1].innerHTML = `
+
+                <input type="text"
+                       class="item-input item-name"
+                       value="${escapeHtmlAttribute(itemName)}"
+                       autocomplete="off">
+
+                <div class="inline-error item-error"></div>
+
+            `;
+
+
+            /* =====================================================
+               QUANTITY
+               ===================================================== */
+
+            row.children[2].innerHTML = `
+
+                <input type="number"
+                       class="item-input item-quantity"
+                       min="1"
+                       step="1"
+                       value="${quantity}">
+
+                <div class="inline-error item-error"></div>
+
+            `;
+
+
+            /* =====================================================
+               PRICE
+               ===================================================== */
+
+            row.children[3].innerHTML = `
+
+                <div class="input-group">
+
+                    <span class="input-group-text">
+                        Rp
+                    </span>
+
+                    <input type="number"
+                           class="form-control item-price"
+                           min="1"
+                           step="0.01"
+                           value="${price}">
+
+                </div>
+
+                <div class="inline-error item-error"></div>
+
+            `;
+
+
+            /* =====================================================
+               TOTAL
+               ===================================================== */
+
+            row.children[4].innerHTML = `
+
+                <span class="text-muted">
+                    Belum disimpan
+                </span>
+
+            `;
+
+
+            /* =====================================================
+               ACTION
+               ===================================================== */
+
+            row.children[5].innerHTML = `
+
+                <button type="button"
+                        class="btn-row btn-row-save"
+                        onclick="saveItem(this)"
+                        title="Simpan Baris">
+                    ✓
+                </button>
+
+                <button type="button"
+                        class="btn-row btn-row-cancel"
+                        onclick="cancelEditItem(this)"
+                        title="Batal">
+                    ✕
+                </button>
+
+            `;
+
+
+            row.querySelector(
+                ".item-name"
+            )?.focus();
+
+
+            calculateGrandTotal();
+        }
+
+
+        /* =========================================================
+           CANCEL EDIT
+           ========================================================= */
+
+        function cancelEditItem(button) {
+
+            const row =
+                button.closest("tr");
+
+            if (!row) {
+                return;
+            }
+
+
+            const itemName =
+                row.dataset.oldItemName || "";
+
+            const quantity =
+                row.dataset.oldQuantity || "";
+
+            const price =
+                row.dataset.oldPrice || "";
+
+            const total =
+                row.dataset.oldTotal || "0";
+
+
+            row.dataset.mode =
+                "display";
+
+            row.classList.remove(
+                "editing-row",
+                "input-row"
+            );
+
+
+            row.dataset.savedItemName =
+                itemName;
+
+            row.dataset.savedQuantity =
+                quantity;
+
+            row.dataset.savedPrice =
+                price;
+
+            row.dataset.savedTotal =
+                total;
+
+
+            /* =====================================================
+               RESTORE ITEM NAME
+               ===================================================== */
+
+            row.children[1].innerHTML = `
+
+                <input type="hidden"
+                       name=""
+                       class="saved-item-name"
+                       value="${escapeHtmlAttribute(itemName)}">
+
+                <span>
+                    ${escapeHtml(itemName)}
+                </span>
+
+            `;
+
+
+            /* =====================================================
+               RESTORE QUANTITY
+               ===================================================== */
+
+            row.children[2].innerHTML = `
+
+                <input type="hidden"
+                       name=""
+                       class="saved-item-quantity"
+                       value="${quantity}">
+
+                <span>
+                    ${quantity}
+                </span>
+
+            `;
+
+
+            /* =====================================================
+               RESTORE PRICE
+               ===================================================== */
+
+            row.children[3].innerHTML = `
+
+                <input type="hidden"
+                       name=""
+                       class="saved-item-price"
+                       value="${price}">
+
+                <span>
+                    Rp ${formatNumber(price)}
+                </span>
+
+            `;
+
+
+            /* =====================================================
+               RESTORE TOTAL
+               ===================================================== */
+
+            row.children[4].innerHTML = `
+
+                <input type="hidden"
+                       class="saved-item-total"
+                       value="${total}">
+
+                <span class="item-total">
+                    Rp ${formatNumber(total)}
+                </span>
+
+            `;
+
+
+            /* =====================================================
+               RESTORE ACTION
+               ===================================================== */
+
+            row.children[5].innerHTML = `
+
+                <button type="button"
+                        class="btn-row btn-row-edit"
+                        onclick="editItem(this)"
+                        title="Edit">
+                    ✏
+                </button>
+
+                <button type="button"
+                        class="btn-row btn-row-delete"
+                        onclick="removeItem(this)"
+                        title="Hapus">
+                    🗑
+                </button>
+
+            `;
+
+
+            reindexItems();
+
+            calculateGrandTotal();
+
+            updateItemNumbers();
+        }
+
+
+        /* =========================================================
+           REMOVE ITEM
+           ========================================================= */
+
+        function removeItem(button) {
+
+            const row =
+                button.closest("tr");
+
+            if (!row) {
+                return;
+            }
+
+            row.remove();
+
+            reindexItems();
+
+            updateItemNumbers();
+
+            checkEmptyItems();
+
+            calculateGrandTotal();
+        }
+
+
+        /* =========================================================
+           REINDEX ITEMS
+           ========================================================= */
+
+        function reindexItems() {
+
+            const rows =
+                document.querySelectorAll(
+                    "#itemsBody tr"
+                );
+
+
+            rows.forEach(
+                (row, index) => {
+
+                    const itemName =
+                        row.querySelector(
+                            ".saved-item-name"
+                        );
+
+                    const quantity =
+                        row.querySelector(
+                            ".saved-item-quantity"
+                        );
+
+                    const price =
+                        row.querySelector(
+                            ".saved-item-price"
+                        );
+
+
+                    if (itemName) {
+
+                        itemName.name =
+                            `Items[${index}].ITEM_NAME`;
+
+                    }
+
+
+                    if (quantity) {
+
+                        quantity.name =
+                            `Items[${index}].QUANTITY`;
+
+                    }
+
+
+                    if (price) {
+
+                        price.name =
+                            `Items[${index}].PRICE`;
+
+                    }
+
+                }
+            );
+
+        }
+
+
+        /* =========================================================
+           UPDATE ITEM NUMBER
+           ========================================================= */
+
+        function updateItemNumbers() {
+
+            const rows =
+                document.querySelectorAll(
+                    "#itemsBody tr"
+                );
+
+
+            rows.forEach(
+                (row, index) => {
+
+                    const number =
+                        row.querySelector(
+                            ".item-number"
+                        );
+
+
+                    if (number) {
+
+                        number.innerText =
+                            index + 1;
+
+                    }
+
+                }
+            );
+
+        }
+
+
+        /* =========================================================
+           EMPTY STATE
+           ========================================================= */
+
+        function checkEmptyItems() {
+
+            const rows =
+                document.querySelectorAll(
+                    "#itemsBody tr"
+                );
+
+
+            const emptyMessage =
+                document.getElementById(
+                    "emptyItemMessage"
+                );
+
+
+            emptyMessage.style.display =
+                rows.length === 0
+                    ? "block"
+                    : "none";
+        }
+
+
+        /* =========================================================
+           CALCULATE GRAND TOTAL
+           =========================================================
+
+           Tidak melakukan QTY * PRICE di JavaScript.
+
+           Semua kalkulasi dilakukan oleh
+           SalesOrderService.
+           ========================================================= */
 
         async function calculateGrandTotal() {
 
             const rows =
-                document.querySelectorAll("#itemsBody tr");
+                document.querySelectorAll(
+                    "#itemsBody tr"
+                );
+
 
             const items = [];
 
 
-            rows.forEach(row => {
+            rows.forEach(
+                row => {
 
-                const itemName =
-                    row.querySelector(".ITEM_NAME")?.value || "";
-
-
-                const quantity =
-                    parseInt(
-                        row.querySelector(".QUANTITY")?.value || "0"
-                    );
-
-
-                const price =
-                    parseFloat(
-                        row.querySelector(".PRICE")?.value || "0"
-                    );
+                    if (
+                        row.dataset.mode !==
+                        "display"
+                    ) {
+                        return;
+                    }
 
 
-                items.push({
+                    const itemName =
+                        row.querySelector(
+                            ".saved-item-name"
+                        )?.value || "";
 
-                    ITEM_NAME: itemName,
 
-                    QUANTITY: quantity,
+                    const quantity =
+                        parseInt(
+                            row.querySelector(
+                                ".saved-item-quantity"
+                            )?.value || "0"
+                        );
 
-                    PRICE: price
 
-                });
+                    const price =
+                        parseFloat(
+                            row.querySelector(
+                                ".saved-item-price"
+                            )?.value || "0"
+                        );
 
-            });
+
+                    items.push({
+
+                        ITEM_NAME:
+                            itemName,
+
+                        QUANTITY:
+                            quantity,
+
+                        PRICE:
+                            price
+
+                    });
+
+                }
+            );
+
+
+            if (items.length === 0) {
+
+                document.getElementById(
+                    "grandTotal"
+                ).innerText = "0";
+
+                return;
+            }
 
 
             try {
@@ -746,13 +1999,21 @@
                             },
 
                             body: JSON.stringify({
+
                                 Items: items
+
                             })
+
                         }
                     );
 
 
                 if (!response.ok) {
+
+                    console.error(
+                        "Gagal menghitung Grand Total."
+                    );
+
                     return;
                 }
 
@@ -761,15 +2022,18 @@
                     await response.json();
 
 
-                document.getElementById("grandTotal").textContent =
-                    Number(result.grandTotal)
-                        .toLocaleString("id-ID");
+                document.getElementById(
+                    "grandTotal"
+                ).innerText =
+                    formatNumber(
+                        result.grandTotal || 0
+                    );
 
             }
             catch (error) {
 
                 console.error(
-                    "Gagal menghitung Grand Total:",
+                    "Gagal menghubungi SalesOrderService:",
                     error
                 );
 
@@ -778,40 +2042,177 @@
         }
 
 
-        /*
-         * Ketika Quantity atau Price berubah,
-         * minta backend menghitung ulang Grand Total.
-         */
+        /* =========================================================
+           ERROR
+           ========================================================= */
 
-        document.addEventListener(
-            "input",
-            function (event) {
+        function clearItemErrors(row) {
 
-                if (
-                    event.target.classList.contains("QUANTITY") ||
-                    event.target.classList.contains("PRICE")
-                ) {
+            row.querySelectorAll(
+                ".item-error"
+            )
+            .forEach(
+                error => {
 
-                    calculateGrandTotal();
+                    error.innerText = "";
 
                 }
+            );
+
+        }
+
+
+        function showItemError(
+            row,
+            message
+        ) {
+
+            const errors =
+                row.querySelectorAll(
+                    ".item-error"
+                );
+
+
+            if (errors.length > 0) {
+
+                errors[0].innerText =
+                    message;
 
             }
-        );
+
+        }
 
 
-        /*
-         * Saat halaman Edit pertama kali dibuka:
-         *
-         * 1. Rapikan index item
-         * 2. Hitung Grand Total dari backend
-         */
+        /* =========================================================
+           FORMAT NUMBER
+           ========================================================= */
+
+        function formatNumber(value) {
+
+            return Number(value)
+                .toLocaleString("id-ID");
+
+        }
+
+
+        /* =========================================================
+           ESCAPE HTML
+           ========================================================= */
+
+        function escapeHtml(value) {
+
+            return String(value ?? "")
+                .replace(
+                    /&/g,
+                    "&amp;"
+                )
+                .replace(
+                    /</g,
+                    "&lt;"
+                )
+                .replace(
+                    />/g,
+                    "&gt;"
+                )
+                .replace(
+                    /"/g,
+                    "&quot;"
+                )
+                .replace(
+                    /'/g,
+                    "&#039;"
+                );
+
+        }
+
+
+        function escapeHtmlAttribute(value) {
+
+            return escapeHtml(value);
+
+        }
+
+
+        /* =========================================================
+           FORM SUBMIT
+           ========================================================= */
+
+        document
+            .getElementById(
+                "salesOrderForm"
+            )
+            .addEventListener(
+                "submit",
+                function (event) {
+
+                    const rows =
+                        document.querySelectorAll(
+                            "#itemsBody tr"
+                        );
+
+
+                    /* =============================================
+                       MINIMAL 1 ITEM
+                       ============================================= */
+
+                    if (rows.length === 0) {
+
+                        event.preventDefault();
+
+                        alert(
+                            "Minimal satu item harus ditambahkan."
+                        );
+
+                        return;
+                    }
+
+
+                    /* =============================================
+                       SEMUA ITEM HARUS DISPLAY
+                       ============================================= */
+
+                    const hasUnsavedItem =
+                        Array.from(rows)
+                            .some(
+                                row =>
+                                    row.dataset.mode !==
+                                    "display"
+                            );
+
+
+                    if (hasUnsavedItem) {
+
+                        event.preventDefault();
+
+                        alert(
+                            "Silakan simpan semua perubahan item terlebih dahulu."
+                        );
+
+                        return;
+                    }
+
+
+                    /* =============================================
+                       PASTIKAN INDEX ITEMS BERURUTAN
+                       ============================================= */
+
+                    reindexItems();
+
+                }
+            );
+
+
+        /* =========================================================
+           INITIAL LOAD
+           ========================================================= */
 
         document.addEventListener(
             "DOMContentLoaded",
             function () {
 
-                renumberItems();
+                updateItemNumbers();
+
+                checkEmptyItems();
 
                 calculateGrandTotal();
 
@@ -819,5 +2220,4 @@
         );
 
     </script>
-
 }

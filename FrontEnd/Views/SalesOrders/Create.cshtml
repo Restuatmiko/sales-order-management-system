@@ -7,307 +7,829 @@
                      ?? new List<FrontEnd.Models.CustomerResponse>();
 }
 
-<div class="container-fluid px-4 py-4">
+<style>
 
-    <!-- Page Header -->
-    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+    /* =========================================================
+           PAGE
+           ========================================================= */
 
-        <div>
-            <h2 class="fw-bold mb-1">Create Sales Order</h2>
+    .create-page {
+        padding: 22px 30px;
+        background: #ffffff;
+    }
 
-            <p class="text-muted mb-0">
-                Buat Sales Order baru dan tambahkan detail item
-            </p>
-        </div>
-
-        <a asp-action="Index"
-           class="btn btn-outline-secondary">
-            ← Kembali
-        </a>
-
-    </div>
-
-
-    <!-- Error -->
-    @if (ViewBag.Error != null)
-    {
-        <div class="alert alert-danger alert-dismissible fade show shadow-sm"
-             role="alert">
-
-            <strong>Gagal!</strong>
-            @ViewBag.Error
-
-            <button type="button"
-                    class="btn-close"
-                    data-bs-dismiss="alert">
-            </button>
-
-        </div>
+    .create-wrapper {
+        max-width: 1350px;
+        margin: 0 auto;
     }
 
 
-    <form asp-action="Create"
-          method="post">
+    /* =========================================================
+           PAGE HEADER
+           ========================================================= */
 
-        @Html.AntiForgeryToken()
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 12px;
+    }
+
+    .page-title {
+        color: #203f67;
+        font-size: 20px;
+        font-weight: 700;
+        margin: 0;
+    }
+
+    .page-actions {
+        display: flex;
+        gap: 6px;
+    }
+
+    .btn-save-order {
+        background: #198754;
+        border: 1px solid #198754;
+        color: #ffffff;
+        border-radius: 4px;
+        padding: 6px 14px;
+        font-size: 12px;
+        font-weight: 600;
+        cursor: pointer;
+    }
+
+        .btn-save-order:hover {
+            background: #157347;
+            border-color: #157347;
+            color: #ffffff;
+        }
+
+    .btn-close-page {
+        background: #e5e5e5;
+        border: 1px solid #d2d2d2;
+        color: #444444;
+        border-radius: 4px;
+        padding: 6px 14px;
+        font-size: 12px;
+        font-weight: 600;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+        .btn-close-page:hover {
+            background: #d8d8d8;
+            color: #333333;
+        }
 
 
-        <!-- Order Information -->
-        <div class="card border-0 shadow-sm mb-4">
+    /* =========================================================
+           MAIN ORDER CARD
+           ========================================================= */
 
-            <div class="card-header bg-white border-0 px-4 py-3">
+    .order-card {
+        background: #ffffff;
+        border: 1px solid #c5d4e6;
+        border-radius: 5px;
+        overflow: hidden;
+        margin-bottom: 13px;
+    }
 
-                <h5 class="fw-semibold mb-1">
-                    Order Information
-                </h5>
+    .order-card-header {
+        background: #203f67;
+        color: #ffffff;
+        padding: 8px 14px;
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: .2px;
+    }
 
-                <small class="text-muted">
-                    Informasi utama Sales Order
-                </small>
+    .order-card-body {
+        padding: 14px;
+    }
+
+
+    /* =========================================================
+           ORDER HEADER
+           ========================================================= */
+
+    .header-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        column-gap: 38px;
+        row-gap: 8px;
+    }
+
+    .form-group {
+        display: flex;
+        align-items: center;
+    }
+
+    .form-label-custom {
+        width: 105px;
+        flex-shrink: 0;
+        color: #555555;
+        font-size: 12px;
+        font-weight: 500;
+        margin: 0 8px 0 0;
+        text-align: right;
+    }
+
+    .required {
+        color: #dc3545;
+    }
+
+    .form-control-custom,
+    .form-select-custom {
+        height: 32px;
+        border: 1px solid #aebdce;
+        border-radius: 3px;
+        padding: 5px 8px;
+        font-size: 12px;
+        color: #444444;
+        background: #ffffff;
+        outline: none;
+        width: 100%;
+    }
+
+        .form-control-custom:focus,
+        .form-select-custom:focus {
+            border-color: #203f67;
+            box-shadow: none;
+        }
+
+    .address-field {
+        grid-column: 1 / -1;
+        width: 75%;
+    }
+
+        .address-field .form-label-custom {
+            width: 105px;
+        }
+
+    .validation-message {
+        color: #dc3545;
+        font-size: 11px;
+        margin-left: 5px;
+    }
+
+
+    /* =========================================================
+           ORDER DETAIL
+           ========================================================= */
+
+    .detail-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 9px;
+    }
+
+    .detail-title {
+        color: #555555;
+        font-size: 12px;
+        font-weight: 700;
+        margin: 0;
+        text-transform: uppercase;
+    }
+
+    .btn-add-item {
+        background: #ffffff;
+        border: 1px solid #203f67;
+        color: #203f67;
+        border-radius: 4px;
+        padding: 5px 11px;
+        font-size: 12px;
+        font-weight: 600;
+        cursor: pointer;
+    }
+
+        .btn-add-item:hover {
+            background: #203f67;
+            color: #ffffff;
+        }
+
+
+    /* =========================================================
+           ITEM TABLE
+           ========================================================= */
+
+    .item-table-wrapper {
+        border: 1px solid #c5d4e6;
+        overflow-x: auto;
+    }
+
+    .item-table {
+        width: 100%;
+        margin: 0;
+        border-collapse: collapse;
+        font-size: 12px;
+    }
+
+        .item-table thead th {
+            background: #e5ebf3;
+            color: #203f67;
+            font-weight: 700;
+            border: 1px solid #c1cede;
+            padding: 7px 8px;
+            height: 32px;
+            white-space: nowrap;
+        }
+
+        .item-table tbody td {
+            border: 1px solid #d0dbe8;
+            padding: 5px 7px;
+            height: 34px;
+            vertical-align: middle;
+            color: #444444;
+        }
+
+        .item-table tbody tr:nth-child(even) {
+            background: #f4f6f9;
+        }
+
+        /* Baris input aktif */
+        .item-table tbody tr.input-row {
+            background: #fffbea;
+        }
+
+            .item-table tbody tr.input-row td {
+                border-color: #e8dda0;
+            }
+
+
+    /* =========================================================
+           COLUMN WIDTH
+           ========================================================= */
+
+    .number-column {
+        width: 42px;
+        text-align: center;
+    }
+
+    .item-name-column {
+        min-width: 250px;
+    }
+
+    .qty-column {
+        width: 90px;
+    }
+
+    .price-column {
+        width: 165px;
+    }
+
+    .total-column {
+        width: 165px;
+    }
+
+    .action-column {
+        width: 105px;
+        text-align: center;
+    }
+
+
+    /* =========================================================
+           ITEM INPUT
+           ========================================================= */
+
+    .item-input {
+        width: 100%;
+        height: 29px;
+        border: 1px solid #aebdce;
+        border-radius: 3px;
+        padding: 4px 7px;
+        font-size: 12px;
+        color: #444444;
+        background: #ffffff;
+        outline: none;
+    }
+
+        .item-input:focus {
+            border-color: #203f67;
+            box-shadow: none;
+        }
+
+    .item-table .input-group {
+        display: flex;
+    }
+
+    .item-table .input-group-text {
+        height: 29px;
+        padding: 4px 7px;
+        font-size: 11px;
+        background: #f1f3f5;
+        border: 1px solid #aebdce;
+        border-right: none;
+        border-radius: 3px 0 0 3px;
+    }
+
+    .item-table .input-group .form-control {
+        height: 29px;
+        font-size: 12px;
+        border-radius: 0 3px 3px 0;
+    }
+
+    .item-total {
+        font-weight: 600;
+        color: #333333;
+        white-space: nowrap;
+    }
+
+    .inline-error {
+        color: #dc3545;
+        font-size: 10px;
+        margin-top: 2px;
+    }
+
+
+    /* =========================================================
+           ACTION BUTTONS
+           ========================================================= */
+
+    .item-actions {
+        white-space: nowrap;
+    }
+
+    .btn-row {
+        width: 25px;
+        height: 25px;
+        border-radius: 3px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0;
+        font-size: 13px;
+        cursor: pointer;
+    }
+
+    .btn-row-save {
+        background: #198754;
+        border: 1px solid #198754;
+        color: #ffffff;
+    }
+
+        .btn-row-save:hover {
+            background: #157347;
+        }
+
+    .btn-row-cancel {
+        background: #e7e7e7;
+        border: 1px solid #cccccc;
+        color: #444444;
+    }
+
+        .btn-row-cancel:hover {
+            background: #d7d7d7;
+        }
+
+    .btn-row-edit {
+        background: transparent;
+        border: none;
+        color: #f47b43;
+        font-size: 14px;
+    }
+
+        .btn-row-edit:hover {
+            color: #d95d27;
+        }
+
+    .btn-row-delete {
+        background: transparent;
+        border: none;
+        color: #888888;
+        font-size: 13px;
+    }
+
+        .btn-row-delete:hover {
+            color: #d9534f;
+        }
+
+
+    /* =========================================================
+           EMPTY STATE
+           ========================================================= */
+
+    .empty-items {
+        text-align: center;
+    }
+
+        .empty-items td {
+            padding: 20px !important;
+            color: #999999;
+            font-style: italic;
+        }
+
+    #emptyItemMessage {
+        display: none;
+    }
+
+
+    /* =========================================================
+           GRAND TOTAL
+           ========================================================= */
+
+    .grand-total-wrapper {
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+        margin-top: 10px;
+        border-top: 3px solid #203f67;
+        background: #e5ebf3;
+        padding: 8px 12px;
+    }
+
+    .grand-total-label {
+        color: #203f67;
+        font-size: 13px;
+        font-weight: 700;
+        margin-right: 15px;
+    }
+
+    .grand-total-value {
+        min-width: 170px;
+        text-align: right;
+        color: #203f67;
+        font-size: 14px;
+        font-weight: 700;
+    }
+
+    .grand-total-note {
+        text-align: left;
+        margin-top: 5px;
+        color: #999999;
+        font-size: 10px;
+        font-style: italic;
+    }
+
+
+    /* =========================================================
+           BOTTOM ACTION
+           ========================================================= */
+
+    .bottom-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 6px;
+        margin-top: 12px;
+    }
+
+
+    /* =========================================================
+           ERROR
+           ========================================================= */
+
+    .notification {
+        border-radius: 4px;
+        font-size: 12px;
+        margin-bottom: 12px;
+    }
+
+
+    /* =========================================================
+           RESPONSIVE
+           ========================================================= */
+
+    @@media (max-width: 768px) {
+
+        .create-page {
+            padding: 15px;
+        }
+
+        .page-header {
+            align-items: flex-start;
+            gap: 10px;
+        }
+
+        .header-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .address-field {
+            width: 100%;
+        }
+
+        .form-group {
+            align-items: flex-start;
+            flex-direction: column;
+        }
+
+        .form-label-custom {
+            width: auto;
+            text-align: left;
+            margin-bottom: 4px;
+        }
+    }
+
+</style>
+
+
+<div class="create-page">
+
+    <div class="create-wrapper">
+
+        <!-- =====================================================
+             PAGE HEADER
+             ===================================================== -->
+
+        <div class="page-header">
+
+            <h1 class="page-title">
+                Create Sales Order
+            </h1>
+
+            <div class="page-actions">
+
+                <button type="submit"
+                        form="salesOrderForm"
+                        class="btn-save-order">
+                    💾 Save Order
+                </button>
+
+                <a asp-action="Index"
+                   class="btn-close-page">
+                    ✕ Close
+                </a>
 
             </div>
 
-
-            <div class="card-body px-4 pb-4">
-
-                <div class="row g-3">
-
-                    <!-- Order Number -->
-                    <div class="col-md-6">
-
-                        <label class="form-label fw-semibold">
-                            Order Number *
-                        </label>
-
-                        <input asp-for="SO_NO"
-                               class="form-control"
-                               placeholder="Contoh: SO-2026-001" />
-
-                        <span asp-validation-for="SO_NO"
-                              class="text-danger small">
-                        </span>
-
-                    </div>
+        </div>
 
 
-                    <!-- Order Date -->
-                    <div class="col-md-6">
+        <!-- =====================================================
+             ERROR MESSAGE
+             ===================================================== -->
+        @if (ViewBag.Error != null)
+        {
+            <div class="alert alert-danger notification">
+                <strong>Gagal!</strong>
+                @ViewBag.Error
+            </div>
+        }
 
-                        <label class="form-label fw-semibold">
-                            Order Date *
-                        </label>
-
-                        <input asp-for="ORDER_DATE"
-                               type="date"
-                               class="form-control" />
-
-                        <span asp-validation-for="ORDER_DATE"
-                              class="text-danger small">
-                        </span>
-
-                    </div>
+        @if (TempData["Error"] != null)
+        {
+            <div class="alert alert-danger notification">
+                <strong>Gagal!</strong>
+                @TempData["Error"]
+            </div>
+        }
 
 
-                    <!-- Customer -->
-                    <div class="col-md-6">
+        <!-- =====================================================
+             FORM
+             ===================================================== -->
 
-                        <label class="form-label fw-semibold">
-                            Customer *
-                        </label>
+        <form asp-action="Create"
+              method="post"
+              id="salesOrderForm">
 
-                        <select asp-for="COM_CUSTOMER_ID"
-                                class="form-select">
+            @Html.AntiForgeryToken()
 
-                            <option value="">
-                                -- Pilih Pelanggan --
-                            </option>
 
-                            @foreach (var customer in customers)
-                            {
-                                <option value="@customer.COM_CUSTOMER_ID">
-                                    @customer.CUSTOMER_NAME
+            <!-- =================================================
+                 ORDER HEADER
+                 ================================================= -->
+
+            <div class="order-card">
+
+                <div class="order-card-header">
+                    ORDER HEADER
+                </div>
+
+                <div class="order-card-body">
+
+                    <div class="header-grid">
+
+
+                        <!-- Order Number -->
+
+                        <div class="form-group">
+
+                            <label class="form-label-custom">
+                                Order Number <span class="required">*</span>
+                            </label>
+
+                            <input asp-for="SO_NO"
+                                   class="form-control-custom"
+                                   placeholder="SO-2024-___"
+                                   autocomplete="off" />
+
+                            <span asp-validation-for="SO_NO"
+                                  class="validation-message">
+                            </span>
+
+                        </div>
+
+
+                        <!-- Order Date -->
+
+                        <div class="form-group">
+
+                            <label class="form-label-custom">
+                                Order Date <span class="required">*</span>
+                            </label>
+
+                            <input asp-for="ORDER_DATE"
+                                   type="date"
+                                   class="form-control-custom" />
+
+                            <span asp-validation-for="ORDER_DATE"
+                                  class="validation-message">
+                            </span>
+
+                        </div>
+
+
+                        <!-- Customer -->
+
+                        <div class="form-group">
+
+                            <label class="form-label-custom">
+                                Customer <span class="required">*</span>
+                            </label>
+
+                            <select asp-for="COM_CUSTOMER_ID"
+                                    class="form-select-custom">
+
+                                <option value="">
+                                    ▼ Pilih Pelanggan
                                 </option>
-                            }
 
-                        </select>
+                                @foreach (var customer in customers)
+                                {
+                                    <option value="@customer.COM_CUSTOMER_ID">
+                                        @customer.CUSTOMER_NAME
+                                    </option>
+                                }
 
-                        <span asp-validation-for="COM_CUSTOMER_ID"
-                              class="text-danger small">
+                            </select>
+
+                            <span asp-validation-for="COM_CUSTOMER_ID"
+                                  class="validation-message">
+                            </span>
+
+                        </div>
+
+
+                        <!-- Address -->
+
+                        <div class="form-group address-field">
+
+                            <label class="form-label-custom">
+                                Address
+                            </label>
+
+                            <input asp-for="ADDRESS"
+                                   class="form-control-custom"
+                                   placeholder="____________________________" />
+
+                            <span asp-validation-for="ADDRESS"
+                                  class="validation-message">
+                            </span>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- =================================================
+                 ORDER DETAIL
+                 ================================================= -->
+
+            <div class="order-card">
+
+                <div class="order-card-body">
+
+                    <div class="detail-header">
+
+                        <h2 class="detail-title">
+                            ORDER DETAIL (ITEMS)
+                        </h2>
+
+                        <button type="button"
+                                id="btnAddItem"
+                                class="btn-add-item"
+                                onclick="addItem()">
+                            + Add Item
+                        </button>
+
+                    </div>
+
+
+                    <!-- ITEM TABLE -->
+
+                    <div class="item-table-wrapper">
+
+                        <table class="item-table">
+
+                            <thead>
+
+                                <tr>
+
+                                    <th class="number-column">
+                                        #
+                                    </th>
+
+                                    <th class="item-name-column">
+                                        Item Name *
+                                    </th>
+
+                                    <th class="qty-column">
+                                        QTY *
+                                    </th>
+
+                                    <th class="price-column">
+                                        Price *
+                                    </th>
+
+                                    <th class="total-column">
+                                        Total
+                                    </th>
+
+                                    <th class="action-column">
+                                        Action
+                                    </th>
+
+                                </tr>
+
+                            </thead>
+
+                            <tbody id="itemsBody">
+                            </tbody>
+
+                        </table>
+
+                    </div>
+
+
+                    <!-- EMPTY STATE -->
+
+                    <div id="emptyItemMessage"
+                         class="empty-items">
+
+                        <div>
+                            Belum ada item.
+                            Klik <strong>+ Add Item</strong>
+                            untuk menambahkan.
+                        </div>
+
+                    </div>
+
+
+                    <!-- GRAND TOTAL -->
+
+                    <div class="grand-total-wrapper">
+
+                        <span class="grand-total-label">
+                            Grand Total
+                        </span>
+
+                        <span class="grand-total-value">
+                            Rp
+                            <span id="grandTotal">
+                                0
+                            </span>
                         </span>
 
                     </div>
 
-
-                    <!-- Address -->
-                    <div class="col-md-6">
-
-                        <label class="form-label fw-semibold">
-                            Address
-                        </label>
-
-                        <input asp-for="ADDRESS"
-                               class="form-control"
-                               placeholder="Masukkan alamat customer" />
-
+                    <div class="grand-total-note">
+                        * Baris kuning = mode input aktif. TOTAL per baris dan Grand Total
+                        dihitung oleh service, bukan JavaScript front-end.
                     </div>
 
                 </div>
 
             </div>
 
-        </div>
 
+            <!-- =================================================
+                 BOTTOM ACTION
+                 ================================================= -->
 
-        <!-- Order Items -->
-        <div class="card border-0 shadow-sm mb-4">
+            <div class="bottom-actions">
 
-            <div class="card-header bg-white border-0 px-4 py-3">
+                <a asp-action="Index"
+                   class="btn-close-page">
+                    ✕ Close
+                </a>
 
-                <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2">
-
-                    <div>
-
-                        <h5 class="fw-semibold mb-1">
-                            Order Items
-                        </h5>
-
-                        <small class="text-muted">
-                            Tambahkan minimal satu item ke dalam Sales Order
-                        </small>
-
-                    </div>
-
-
-                    <button type="button"
-                            class="btn btn-primary"
-                            onclick="addItem()">
-                        + Add Item
-                    </button>
-
-                </div>
+                <button type="submit"
+                        class="btn-save-order">
+                    💾 Save Order
+                </button>
 
             </div>
 
+        </form>
 
-            <div class="card-body p-0">
-
-                <div class="table-responsive">
-
-                    <table class="table table-hover align-middle mb-0">
-
-                        <thead class="table-light">
-
-                            <tr>
-
-                                <th class="ps-4 text-center"
-                                    style="width: 70px;">
-                                    #
-                                </th>
-
-                                <th>
-                                    Item Name *
-                                </th>
-
-                                <th style="width: 180px;">
-                                    Qty *
-                                </th>
-
-                                <th style="width: 230px;">
-                                    Price *
-                                </th>
-
-                                <th class="text-center"
-                                    style="width: 100px;">
-                                    Action
-                                </th>
-
-                            </tr>
-
-                        </thead>
-
-
-                        <tbody id="itemsBody">
-                        </tbody>
-
-                    </table>
-
-                </div>
-
-
-                <!-- Empty State -->
-                <div id="emptyItemMessage"
-                     class="text-center text-muted py-4">
-
-                    <div class="fs-2 mb-2">
-                        🛒
-                    </div>
-
-                    <div class="fw-semibold">
-                        Belum ada item
-                    </div>
-
-                    <small>
-                        Klik <strong>+ Add Item</strong> untuk menambahkan item.
-                    </small>
-
-                </div>
-
-            </div>
-
-        </div>
-
-
-        <!-- Grand Total -->
-        <div class="card border-0 shadow-sm mb-4">
-
-            <div class="card-body px-4 py-3">
-
-                <div class="d-flex justify-content-between align-items-center">
-
-                    <div>
-
-                        <small class="text-muted">
-                            Grand Total
-                        </small>
-
-                        <div class="fw-semibold">
-                            Total keseluruhan Sales Order
-                        </div>
-
-                    </div>
-
-
-                    <div class="text-end">
-
-                        <div class="fs-4 fw-bold">
-                            Rp <span id="grandTotal">0</span>
-                        </div>
-
-                    </div>
-
-                </div>
-
-            </div>
-
-        </div>
-
-
-        <!-- Action Buttons -->
-        <div class="d-flex justify-content-end gap-2">
-
-            <a asp-action="Index"
-               class="btn btn-outline-secondary px-4">
-                Batal
-            </a>
-
-            <button type="submit"
-                    class="btn btn-success px-4">
-                💾 Save Order
-            </button>
-
-        </div>
-
-    </form>
+    </div>
 
 </div>
 
@@ -316,14 +838,20 @@
 
     <partial name="_ValidationScriptsPartial" />
 
+
     <script>
+
+        // =========================================================
+        // GLOBAL
+        // =========================================================
 
         let itemIndex = 0;
 
 
-        // ============================
+        // =========================================================
         // ADD ITEM
-        // ============================
+        // =========================================================
+
         function addItem() {
 
             const tbody =
@@ -332,154 +860,1065 @@
             const emptyMessage =
                 document.getElementById("emptyItemMessage");
 
+
+            const index = itemIndex++;
+
+
             const row =
                 document.createElement("tr");
 
+
+            row.dataset.mode = "input";
+
+            row.dataset.index = index;
+
+
             row.innerHTML = `
+
+                <!-- NUMBER -->
+
                 <td class="text-center text-muted item-number">
-                    ${itemIndex + 1}
+                    ${tbody.children.length + 1}
                 </td>
 
+
+                <!-- ITEM NAME -->
+
                 <td>
+
                     <input type="text"
-                           name="Items[${itemIndex}].ITEM_NAME"
-                           class="form-control ITEM_NAME"
-                           placeholder="Nama item"
-                           required />
+                           name="Items[${index}].ITEM_NAME"
+                           class="form-control item-name"
+                           placeholder="Nama barang..." />
+
+                    <div class="text-danger small item-error mt-1">
+                    </div>
+
                 </td>
 
+
+                <!-- QUANTITY -->
+
                 <td>
+
                     <input type="number"
-                           name="Items[${itemIndex}].QUANTITY"
-                           class="form-control QUANTITY"
+                           name="Items[${index}].QUANTITY"
+                           class="form-control item-quantity"
                            min="1"
-                           placeholder="0"
-                           required />
+                           placeholder="0" />
+
+                    <div class="text-danger small item-error mt-1">
+                    </div>
+
                 </td>
 
+
+                <!-- PRICE -->
+
                 <td>
+
                     <div class="input-group">
+
                         <span class="input-group-text">
                             Rp
                         </span>
 
                         <input type="number"
-                               name="Items[${itemIndex}].PRICE"
-                               class="form-control PRICE"
+                               name="Items[${index}].PRICE"
+                               class="form-control item-price"
                                min="1"
                                step="0.01"
-                               placeholder="0"
-                               required />
+                               placeholder="0" />
+
                     </div>
+
+                    <div class="text-danger small item-error mt-1">
+                    </div>
+
                 </td>
 
-                <td class="text-center">
-                    <button type="button"
-                            class="btn btn-sm btn-outline-danger"
-                            onclick="removeItem(this)"
-                            title="Hapus item">
-                        Delete
-                    </button>
+
+                <!-- TOTAL -->
+
+                <td class="item-total">
+
+                    <span class="text-muted">
+                        0
+                    </span>
+
                 </td>
+
+
+                <!-- ACTION -->
+
+                <td class="text-center item-actions">
+
+                    <button type="button"
+                            class="btn btn-sm btn-success me-1"
+                            onclick="saveItem(this)"
+                            title="Simpan Baris">
+
+                        ✓
+
+                    </button>
+
+
+                    <button type="button"
+                            class="btn btn-sm btn-outline-secondary"
+                            onclick="cancelItem(this)"
+                            title="Batal">
+
+                        ✕
+
+                    </button>
+
+                </td>
+
             `;
+
 
             tbody.appendChild(row);
 
-            itemIndex++;
 
             emptyMessage.style.display = "none";
 
-            // Minta service menghitung ulang
-            calculateGrandTotal();
+
+            updateItemNumbers();
+
+
+            // Fokus ke Item Name
+
+            const itemName =
+                row.querySelector(".item-name");
+
+            if (itemName) {
+                itemName.focus();
+            }
+
         }
 
 
-        // ============================
-        // REMOVE ITEM
-        // ============================
-        function removeItem(button) {
+        // =========================================================
+        // SAVE ITEM
+        // =========================================================
 
-            button
-                .closest("tr")
-                .remove();
+        async function saveItem(button) {
 
-            renumberItems();
+            const row =
+                button.closest("tr");
 
-            const rows =
-                document.querySelectorAll("#itemsBody tr");
 
-            if (rows.length === 0) {
+            if (!row) {
+                return;
+            }
 
-                document.getElementById(
-                    "emptyItemMessage"
-                ).style.display = "block";
+
+            const itemNameInput =
+                row.querySelector(".item-name");
+
+            const quantityInput =
+                row.querySelector(".item-quantity");
+
+            const priceInput =
+                row.querySelector(".item-price");
+
+
+            const itemName =
+                itemNameInput?.value.trim() || "";
+
+
+            const quantity =
+                parseInt(
+                    quantityInput?.value || "0"
+                );
+
+
+            const price =
+                parseFloat(
+                    priceInput?.value || "0"
+                );
+
+
+            // Bersihkan error
+
+            row.querySelectorAll(".item-error")
+                .forEach(error => {
+                    error.innerText = "";
+                });
+
+
+            // =====================================================
+            // VALIDASI DASAR DI FRONTEND
+            //
+            // Validasi utama tetap dilakukan service.
+            // =====================================================
+
+            if (!itemName) {
+
+                row.querySelector(".item-name")
+                    .focus();
+
+                showItemError(
+                    row,
+                    "Item Name wajib diisi."
+                );
+
+                return;
+            }
+
+
+            if (!quantity || quantity <= 0) {
+
+                row.querySelector(".item-quantity")
+                    .focus();
+
+                showItemError(
+                    row,
+                    "Quantity harus lebih dari 0."
+                );
+
+                return;
+            }
+
+
+            if (!price || price <= 0) {
+
+                row.querySelector(".item-price")
+                    .focus();
+
+                showItemError(
+                    row,
+                    "Price harus lebih dari 0."
+                );
+
+                return;
+            }
+
+
+            // =====================================================
+            // KIRIM KE SALES ORDER SERVICE
+            //
+            // Kita menggunakan endpoint Calculate yang sudah ada.
+            // Hanya 1 item dikirim.
+            //
+            // result.grandTotal = Total item tersebut.
+            // =====================================================
+
+            try {
+
+                button.disabled = true;
+
+
+                const response =
+                    await fetch(
+                        "/SalesOrders/Calculate",
+                        {
+                            method: "POST",
+
+                            headers: {
+                                "Content-Type":
+                                    "application/json"
+                            },
+
+                            body: JSON.stringify({
+
+                                Items: [
+
+                                    {
+                                        ITEM_NAME:
+                                            itemName,
+
+                                        QUANTITY:
+                                            quantity,
+
+                                        PRICE:
+                                            price
+                                    }
+
+                                ]
+
+                            })
+                        }
+                    );
+
+
+                const result =
+                    await response.json();
+
+
+                // =================================================
+                // VALIDASI SERVICE GAGAL
+                // =================================================
+
+                if (!response.ok) {
+
+                    showItemError(
+                        row,
+                        result.message ||
+                        "Data item tidak valid."
+                    );
+
+                    button.disabled = false;
+
+                    return;
+                }
+
+
+                // =================================================
+                // BERHASIL
+                // Ubah INPUT → DISPLAY
+                // =================================================
+
+                const total =
+                    Number(
+                        result.grandTotal || 0
+                    );
+
+
+                row.dataset.mode = "display";
+
+
+                // Simpan data lama untuk kebutuhan Edit / Cancel
+
+                row.dataset.savedItemName =
+                    itemName;
+
+                row.dataset.savedQuantity =
+                    quantity;
+
+                row.dataset.savedPrice =
+                    price;
+
+                row.dataset.savedTotal =
+                    total;
+
+
+                // =================================================
+                // ITEM NAME
+                // =================================================
+
+                row.children[1].innerHTML = `
+
+                    <input type="hidden"
+                           name=""
+                           class="saved-item-name"
+                           value="${escapeHtmlAttribute(itemName)}">
+
+                    <span>
+                        ${escapeHtml(itemName)}
+                    </span>
+
+                `;
+
+
+                // =================================================
+                // QUANTITY
+                // =================================================
+
+                row.children[2].innerHTML = `
+
+                    <input type="hidden"
+                           name=""
+                           class="saved-item-quantity"
+                           value="${quantity}">
+
+                    <span>
+                        ${quantity}
+                    </span>
+
+                `;
+
+
+                // =================================================
+                // PRICE
+                // =================================================
+
+                row.children[3].innerHTML = `
+
+                    <input type="hidden"
+                           name=""
+                           class="saved-item-price"
+                           value="${price}">
+
+                    <span>
+                        Rp ${formatNumber(price)}
+                    </span>
+
+                `;
+
+
+                // =================================================
+                // TOTAL
+                // =================================================
+
+                row.children[4].innerHTML = `
+
+                    <input type="hidden"
+                           class="saved-item-total"
+                           value="${total}">
+
+                    <span class="fw-semibold">
+                        Rp ${formatNumber(total)}
+                    </span>
+
+                `;
+
+
+                // =================================================
+                // ACTION
+                // =================================================
+
+                row.children[5].innerHTML = `
+
+                    <button type="button"
+                            class="btn btn-sm btn-warning me-1"
+                            onclick="editItem(this)"
+                            title="Edit">
+
+                        ✏
+
+                    </button>
+
+
+                    <button type="button"
+                            class="btn btn-sm btn-outline-danger"
+                            onclick="removeItem(this)"
+                            title="Hapus">
+
+                        🗑
+
+                    </button>
+
+                `;
+
+
+                // Pastikan index form benar
+
+                reindexItems();
+
+
+                // Hitung ulang Grand Total
+                // melalui backend
+
+                await calculateGrandTotal();
+
+            }
+            catch (error) {
+
+                console.error(error);
+
+                showItemError(
+                    row,
+                    "Gagal menghubungi Sales Order Service."
+                );
+
+            }
+            finally {
+
+                button.disabled = false;
 
             }
 
-            // Minta service menghitung ulang
-            calculateGrandTotal();
         }
 
 
-        // ============================
-        // RENUMBER ITEM
-        // ============================
-        function renumberItems() {
+        // =========================================================
+        // CANCEL NEW ITEM
+        // =========================================================
+
+        function cancelItem(button) {
+
+            const row =
+                button.closest("tr");
+
+
+            if (!row) {
+                return;
+            }
+
+
+            row.remove();
+
+
+            reindexItems();
+
+            updateItemNumbers();
+
+            checkEmptyItems();
+
+            calculateGrandTotal();
+
+        }
+
+
+        // =========================================================
+        // EDIT SAVED ITEM
+        // =========================================================
+
+        function editItem(button) {
+
+            const row =
+                button.closest("tr");
+
+
+            if (!row) {
+                return;
+            }
+
+
+            // Ambil data tersimpan
+
+            const itemName =
+                row.dataset.savedItemName || "";
+
+            const quantity =
+                row.dataset.savedQuantity || "";
+
+            const price =
+                row.dataset.savedPrice || "";
+
+            const total =
+                row.dataset.savedTotal || "0";
+
+
+            // Simpan data lama
+            // untuk tombol Batal
+
+            row.dataset.oldItemName =
+                itemName;
+
+            row.dataset.oldQuantity =
+                quantity;
+
+            row.dataset.oldPrice =
+                price;
+
+            row.dataset.oldTotal =
+                total;
+
+
+            row.dataset.mode = "editing";
+
+
+            // =====================================================
+            // ITEM NAME INPUT
+            // =====================================================
+
+            row.children[1].innerHTML = `
+
+                <input type="text"
+                       class="form-control item-name"
+                       value="${escapeHtmlAttribute(itemName)}">
+
+                <div class="text-danger small item-error mt-1">
+                </div>
+
+            `;
+
+
+            // =====================================================
+            // QUANTITY INPUT
+            // =====================================================
+
+            row.children[2].innerHTML = `
+
+                <input type="number"
+                       class="form-control item-quantity"
+                       min="1"
+                       value="${quantity}">
+
+                <div class="text-danger small item-error mt-1">
+                </div>
+
+            `;
+
+
+            // =====================================================
+            // PRICE INPUT
+            // =====================================================
+
+            row.children[3].innerHTML = `
+
+                <div class="input-group">
+
+                    <span class="input-group-text">
+                        Rp
+                    </span>
+
+                    <input type="number"
+                           class="form-control item-price"
+                           min="1"
+                           step="0.01"
+                           value="${price}">
+
+                </div>
+
+                <div class="text-danger small item-error mt-1">
+                </div>
+
+            `;
+
+
+            // =====================================================
+            // TOTAL
+            // =====================================================
+
+            row.children[4].innerHTML = `
+
+                <span class="text-muted">
+                    Belum disimpan
+                </span>
+
+            `;
+
+
+            // =====================================================
+            // ACTION
+            // =====================================================
+
+            row.children[5].innerHTML = `
+
+                <button type="button"
+                        class="btn btn-sm btn-success me-1"
+                        onclick="saveItem(this)"
+                        title="Simpan Baris">
+
+                    ✓
+
+                </button>
+
+
+                <button type="button"
+                        class="btn btn-sm btn-outline-secondary"
+                        onclick="cancelEditItem(this)"
+                        title="Batal">
+
+                    ✕
+
+                </button>
+
+            `;
+
+
+            // Fokus ke Item Name
+
+            row.querySelector(".item-name")
+                ?.focus();
+
+
+            // Grand Total sementara tetap
+            // dihitung dari item yang mode display.
+
+            calculateGrandTotal();
+
+        }
+
+
+        // =========================================================
+        // CANCEL EDIT
+        // =========================================================
+
+        function cancelEditItem(button) {
+
+            const row =
+                button.closest("tr");
+
+
+            if (!row) {
+                return;
+            }
+
+
+            const itemName =
+                row.dataset.oldItemName || "";
+
+            const quantity =
+                row.dataset.oldQuantity || "";
+
+            const price =
+                row.dataset.oldPrice || "";
+
+            const total =
+                row.dataset.oldTotal || "0";
+
+
+            // Kembalikan mode display
+
+            row.dataset.mode = "display";
+
+
+            row.dataset.savedItemName =
+                itemName;
+
+            row.dataset.savedQuantity =
+                quantity;
+
+            row.dataset.savedPrice =
+                price;
+
+            row.dataset.savedTotal =
+                total;
+
+
+            // =====================================================
+            // ITEM NAME
+            // =====================================================
+
+            row.children[1].innerHTML = `
+
+                <input type="hidden"
+                       name=""
+                       class="saved-item-name"
+                       value="${escapeHtmlAttribute(itemName)}">
+
+                <span>
+                    ${escapeHtml(itemName)}
+                </span>
+
+            `;
+
+
+            // =====================================================
+            // QUANTITY
+            // =====================================================
+
+            row.children[2].innerHTML = `
+
+                <input type="hidden"
+                       name=""
+                       class="saved-item-quantity"
+                       value="${quantity}">
+
+                <span>
+                    ${quantity}
+                </span>
+
+            `;
+
+
+            // =====================================================
+            // PRICE
+            // =====================================================
+
+            row.children[3].innerHTML = `
+
+                <input type="hidden"
+                       name=""
+                       class="saved-item-price"
+                       value="${price}">
+
+                <span>
+                    Rp ${formatNumber(price)}
+                </span>
+
+            `;
+
+
+            // =====================================================
+            // TOTAL
+            // =====================================================
+
+            row.children[4].innerHTML = `
+
+                <input type="hidden"
+                       class="saved-item-total"
+                       value="${total}">
+
+                <span class="fw-semibold">
+                    Rp ${formatNumber(total)}
+                </span>
+
+            `;
+
+
+            // =====================================================
+            // ACTION
+            // =====================================================
+
+            row.children[5].innerHTML = `
+
+                <button type="button"
+                        class="btn btn-sm btn-warning me-1"
+                        onclick="editItem(this)"
+                        title="Edit">
+
+                    ✏
+
+                </button>
+
+
+                <button type="button"
+                        class="btn btn-sm btn-outline-danger"
+                        onclick="removeItem(this)"
+                        title="Hapus">
+
+                    🗑
+
+                </button>
+
+            `;
+
+
+            reindexItems();
+
+            calculateGrandTotal();
+
+        }
+
+
+        // =========================================================
+        // REMOVE SAVED ITEM
+        // =========================================================
+
+        function removeItem(button) {
+
+            const row =
+                button.closest("tr");
+
+
+            if (!row) {
+                return;
+            }
+
+
+            row.remove();
+
+
+            reindexItems();
+
+            updateItemNumbers();
+
+            checkEmptyItems();
+
+            calculateGrandTotal();
+
+        }
+
+
+        // =========================================================
+        // REINDEX FORM ITEMS
+        // =========================================================
+        //
+        // Contoh:
+        //
+        // Items[0].ITEM_NAME
+        // Items[1].ITEM_NAME
+        // Items[2].ITEM_NAME
+        //
+        // Supaya ASP.NET Model Binder menerima list
+        // secara benar setelah item dihapus.
+        //
+        // =========================================================
+
+        function reindexItems() {
 
             const rows =
-                document.querySelectorAll("#itemsBody tr");
+                document.querySelectorAll(
+                    "#itemsBody tr"
+                );
 
-            rows.forEach((row, index) => {
 
-                row.children[0].innerText =
-                    index + 1;
+            rows.forEach(
+                (row, index) => {
 
-            });
+                    const itemName =
+                        row.querySelector(
+                            ".saved-item-name"
+                        );
+
+                    const quantity =
+                        row.querySelector(
+                            ".saved-item-quantity"
+                        );
+
+                    const price =
+                        row.querySelector(
+                            ".saved-item-price"
+                        );
+
+
+                    if (itemName) {
+
+                        itemName.name =
+                            `Items[${index}].ITEM_NAME`;
+
+                    }
+
+
+                    if (quantity) {
+
+                        quantity.name =
+                            `Items[${index}].QUANTITY`;
+
+                    }
+
+
+                    if (price) {
+
+                        price.name =
+                            `Items[${index}].PRICE`;
+
+                    }
+
+                }
+            );
 
         }
 
 
-        // ============================
+        // =========================================================
+        // UPDATE ITEM NUMBER
+        // =========================================================
+
+        function updateItemNumbers() {
+
+            const rows =
+                document.querySelectorAll(
+                    "#itemsBody tr"
+                );
+
+
+            rows.forEach(
+                (row, index) => {
+
+                    const number =
+                        row.querySelector(
+                            ".item-number"
+                        );
+
+
+                    if (number) {
+
+                        number.innerText =
+                            index + 1;
+
+                    }
+
+                }
+            );
+
+        }
+
+
+        // =========================================================
+        // EMPTY STATE
+        // =========================================================
+
+        function checkEmptyItems() {
+
+            const rows =
+                document.querySelectorAll(
+                    "#itemsBody tr"
+                );
+
+
+            const emptyMessage =
+                document.getElementById(
+                    "emptyItemMessage"
+                );
+
+
+            emptyMessage.style.display =
+                rows.length === 0
+                    ? "block"
+                    : "none";
+
+        }
+
+
+        // =========================================================
         // CALCULATE GRAND TOTAL
-        // ============================
+        // =========================================================
+        //
+        // PENTING:
+        //
+        // JavaScript TIDAK menghitung:
+        //
+        // quantity * price
+        //
+        // JavaScript hanya mengirim item ke backend
+        // dan menampilkan hasil dari service.
+        //
+        // =========================================================
+
         async function calculateGrandTotal() {
 
             const rows =
-                document.querySelectorAll("#itemsBody tr");
+                document.querySelectorAll(
+                    "#itemsBody tr"
+                );
+
 
             const items = [];
 
 
-            // Ambil data item dari form
-            rows.forEach(row => {
+            rows.forEach(
+                row => {
 
-                const itemName =
-                    row.querySelector(
-                        'input[name*=".ITEM_NAME"]'
-                    )?.value || "";
+                    // Hanya item yang sudah
+                    // berhasil disimpan.
 
-                const quantity =
-                    parseInt(
+                    if (
+                        row.dataset.mode !==
+                        "display"
+                    ) {
+
+                        return;
+
+                    }
+
+
+                    const itemName =
                         row.querySelector(
-                            'input[name*=".QUANTITY"]'
-                        )?.value
-                    ) || 0;
-
-                const price =
-                    parseFloat(
-                        row.querySelector(
-                            'input[name*=".PRICE"]'
-                        )?.value
-                    ) || 0;
+                            ".saved-item-name"
+                        )?.value || "";
 
 
-                items.push({
-                    ITEM_NAME: itemName,
-                    QUANTITY: quantity,
-                    PRICE: price
-                });
+                    const quantity =
+                        parseInt(
+                            row.querySelector(
+                                ".saved-item-quantity"
+                            )?.value || "0"
+                        );
 
-            });
+
+                    const price =
+                        parseFloat(
+                            row.querySelector(
+                                ".saved-item-price"
+                            )?.value || "0"
+                        );
+
+
+                    items.push({
+
+                        ITEM_NAME:
+                            itemName,
+
+                        QUANTITY:
+                            quantity,
+
+                        PRICE:
+                            price
+
+                    });
+
+                }
+            );
+
+
+            // Jika tidak ada item,
+            // langsung tampilkan 0.
+
+            if (items.length === 0) {
+
+                document.getElementById(
+                    "grandTotal"
+                ).innerText = "0";
+
+                return;
+
+            }
 
 
             try {
@@ -496,7 +1935,9 @@
                             },
 
                             body: JSON.stringify({
+
                                 Items: items
+
                             })
                         }
                     );
@@ -509,6 +1950,7 @@
                     );
 
                     return;
+
                 }
 
 
@@ -516,14 +1958,14 @@
                     await response.json();
 
 
-                // Hanya menampilkan hasil dari service.
-                // Tidak melakukan perhitungan di JavaScript.
+                // Hanya menampilkan hasil backend.
+
                 document.getElementById(
                     "grandTotal"
                 ).innerText =
-                    Number(result.grandTotal)
-                        .toLocaleString("id-ID");
-
+                    formatNumber(
+                        result.grandTotal || 0
+                    );
 
             }
             catch (error) {
@@ -538,39 +1980,168 @@
         }
 
 
-        // ============================
-        // INPUT EVENT
-        // ============================
-        document.addEventListener(
-            "input",
-            function (event) {
+        // =========================================================
+        // SHOW ITEM ERROR
+        // =========================================================
 
-                if (
-                    event.target.name &&
-                    (
-                        event.target.name.includes(
-                            ".QUANTITY"
-                        ) ||
-                        event.target.name.includes(
-                            ".PRICE"
-                        )
-                    )
-                ) {
+        function showItemError(
+            row,
+            message
+        ) {
 
-                    calculateGrandTotal();
+            const errorElements =
+                row.querySelectorAll(
+                    ".item-error"
+                );
 
-                }
+
+            if (errorElements.length > 0) {
+
+                errorElements[0]
+                    .innerText = message;
 
             }
-        );
+
+        }
 
 
-        // ============================
+        // =========================================================
+        // FORMAT NUMBER
+        // =========================================================
+        //
+        // Ini hanya formatting hasil backend,
+        // bukan kalkulasi.
+        //
+        // =========================================================
+
+        function formatNumber(value) {
+
+            return Number(value)
+                .toLocaleString("id-ID");
+
+        }
+
+
+        // =========================================================
+        // ESCAPE HTML
+        // =========================================================
+
+        function escapeHtml(value) {
+
+            return String(value)
+                .replace(
+                    /&/g,
+                    "&amp;"
+                )
+                .replace(
+                    /</g,
+                    "&lt;"
+                )
+                .replace(
+                    />/g,
+                    "&gt;"
+                )
+                .replace(
+                    /"/g,
+                    "&quot;"
+                )
+                .replace(
+                    /'/g,
+                    "&#039;"
+                );
+
+        }
+
+
+        function escapeHtmlAttribute(value) {
+
+            return escapeHtml(value);
+
+        }
+
+
+        // =========================================================
+        // FORM SUBMIT VALIDATION
+        // =========================================================
+
+        document
+            .getElementById("salesOrderForm")
+            .addEventListener(
+                "submit",
+                function (event) {
+
+                    const rows =
+                        document.querySelectorAll(
+                            "#itemsBody tr"
+                        );
+
+
+                    // -------------------------------------------------
+                    // Minimal 1 item
+                    // -------------------------------------------------
+
+                    if (rows.length === 0) {
+
+                        event.preventDefault();
+
+
+                        alert(
+                            "Minimal satu item harus ditambahkan."
+                        );
+
+
+                        return;
+
+                    }
+
+
+                    // -------------------------------------------------
+                    // Semua item harus sudah disimpan
+                    // -------------------------------------------------
+
+                    const hasUnsavedItem =
+                        Array.from(rows)
+                            .some(
+                                row =>
+                                    row.dataset.mode !==
+                                    "display"
+                            );
+
+
+                    if (hasUnsavedItem) {
+
+                        event.preventDefault();
+
+
+                        alert(
+                            "Silakan simpan semua item terlebih dahulu."
+                        );
+
+
+                        return;
+
+                    }
+
+
+                    // -------------------------------------------------
+                    // Pastikan index Items berurutan
+                    // -------------------------------------------------
+
+                    reindexItems();
+
+                }
+            );
+
+
+        // =========================================================
         // INITIAL LOAD
-        // ============================
+        // =========================================================
+
         document.addEventListener(
             "DOMContentLoaded",
             function () {
+
+                checkEmptyItems();
 
                 calculateGrandTotal();
 
@@ -578,5 +2149,4 @@
         );
 
     </script>
-
 }

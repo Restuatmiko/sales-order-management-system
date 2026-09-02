@@ -1,5 +1,6 @@
 ﻿using FrontEnd.Models;
 using Microsoft.AspNetCore.Mvc;
+using System.Text;
 using System.Text.Json;
 
 namespace FrontEnd.Controllers
@@ -395,6 +396,34 @@ namespace FrontEnd.Controllers
                 contentType,
                 fileName
             );
+        }
+        [HttpPost]
+        public async Task<IActionResult> CalculateItem(
+    [FromBody] CreateSalesOrderItemRequest item)
+        {
+            var client = _httpClientFactory.CreateClient("SalesOrderService");
+
+            var json = JsonSerializer.Serialize(item);
+
+            var content = new StringContent(
+                json,
+                Encoding.UTF8,
+                "application/json"
+            );
+
+            var response = await client.PostAsync(
+                "/api/orders/calculate-item",
+                content
+            );
+
+            var result = await response.Content.ReadAsStringAsync();
+
+            return new ContentResult
+            {
+                Content = result,
+                ContentType = "application/json",
+                StatusCode = (int)response.StatusCode
+            };
         }
         [HttpPost]
         public async Task<IActionResult> Calculate(

@@ -547,7 +547,36 @@ namespace SalesOrderService.Controllers
                 grandTotal = grandTotal
             });
         }
-    private IActionResult BadRequestError(string message)
+        [HttpPost("calculate-item")]
+        public IActionResult CalculateItem(
+    [FromBody] CreateSalesOrderItemRequest item)
+        {
+            if (string.IsNullOrWhiteSpace(item.ITEM_NAME))
+            {
+                return BadRequestError("Item Name wajib diisi.");
+            }
+
+            if (item.QUANTITY <= 0)
+            {
+                return BadRequestError("Quantity harus lebih dari 0.");
+            }
+
+            if (item.PRICE <= 0)
+            {
+                return BadRequestError("Price harus lebih dari 0.");
+            }
+
+            var total = item.QUANTITY * item.PRICE;
+
+            return Ok(new
+            {
+                itemName = item.ITEM_NAME,
+                quantity = item.QUANTITY,
+                price = item.PRICE,
+                total = total
+            });
+        }
+        private IActionResult BadRequestError(string message)
         {
             return BadRequest(new
             {
