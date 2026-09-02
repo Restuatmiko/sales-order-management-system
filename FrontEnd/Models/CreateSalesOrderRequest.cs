@@ -1,8 +1,8 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace SalesOrderService.Models
+namespace FrontEnd.Models
 {
-    public class UpdateSalesOrderRequest
+    public class CreateSalesOrderRequest
     {
         [JsonPropertyName("soNo")]
         public string SO_NO { get; set; } = string.Empty;

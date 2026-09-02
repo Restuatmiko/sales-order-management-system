@@ -2,6 +2,9 @@
 using Microsoft.EntityFrameworkCore;
 using SalesOrderService.Data;
 using SalesOrderService.Models;
+using SalesOrderService.DTOs;
+using Microsoft.EntityFrameworkCore.Storage;
+using ClosedXML.Excel;
 
 namespace SalesOrderService.Controllers
 {
@@ -18,17 +21,75 @@ namespace SalesOrderService.Controllers
 
         // GET: api/SalesOrders
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<SalesOrder>>> GetSalesOrders()
+        public async Task<ActionResult<IEnumerable<SalesOrderResponse>>> GetSalesOrders(
+    [FromQuery] string? keyword,
+    [FromQuery] DateTime? orderDate)
         {
-            var salesOrders = await _context.SalesOrders
+            var query = _context.SalesOrders
                 .Include(s => s.Items)
-                .ToListAsync();
+                .AsQueryable();
 
-            return Ok(salesOrders);
+            // Filter keyword
+            if (!string.IsNullOrWhiteSpace(keyword))
+            {
+                keyword = keyword.Trim();
+
+                query = query.Where(s =>
+                    s.SO_NO.Contains(keyword) ||
+                    s.ADDRESS.Contains(keyword) ||
+                    _context.Customers.Any(c =>
+                        c.COM_CUSTOMER_ID == s.COM_CUSTOMER_ID &&
+                        c.CUSTOMER_NAME.Contains(keyword)
+                    )
+                );
+            }
+
+            // Filter tanggal
+            if (orderDate.HasValue)
+            {
+                query = query.Where(s =>
+                    s.ORDER_DATE.Date == orderDate.Value.Date);
+            }
+
+            var salesOrders = await query.ToListAsync();
+
+            var result = new List<SalesOrderResponse>();
+
+            foreach (var salesOrder in salesOrders)
+            {
+                var customerName = await _context.Customers
+                    .Where(c => c.COM_CUSTOMER_ID == salesOrder.COM_CUSTOMER_ID)
+                    .Select(c => c.CUSTOMER_NAME)
+                    .FirstOrDefaultAsync();
+
+                result.Add(new SalesOrderResponse
+                {
+                    SalesSoId = salesOrder.SALES_SO_ID,
+                    SoNo = salesOrder.SO_NO,
+                    OrderDate = salesOrder.ORDER_DATE,
+                    CustomerId = salesOrder.COM_CUSTOMER_ID,
+                    CustomerName = customerName ?? string.Empty,
+                    Address = salesOrder.ADDRESS,
+
+                    GrandTotal = salesOrder.Items.Sum(i =>
+                        i.QUANTITY * i.PRICE),
+
+                    Items = salesOrder.Items.Select(i => new SalesOrderItemResponse
+                    {
+                        SalesOrderLineItemId = i.SALES_SO_LITEM_ID,
+                        ItemName = i.ITEM_NAME,
+                        Quantity = i.QUANTITY,
+                        Price = i.PRICE,
+                        Total = i.QUANTITY * i.PRICE
+                    }).ToList()
+                });
+            }
+
+            return Ok(result);
         }
         // GET: api/SalesOrders/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<SalesOrder>> GetSalesOrder(int id)
+        public async Task<ActionResult<SalesOrderResponse>> GetSalesOrder(int id)
         {
             var salesOrder = await _context.SalesOrders
                 .Include(s => s.Items)
@@ -36,10 +97,37 @@ namespace SalesOrderService.Controllers
 
             if (salesOrder == null)
             {
-                return NotFound();
+                return NotFound("Order tidak ditemukan.");
             }
 
-            return Ok(salesOrder);
+            var result = new SalesOrderResponse
+            {
+                SalesSoId = salesOrder.SALES_SO_ID,
+                SoNo = salesOrder.SO_NO,
+                OrderDate = salesOrder.ORDER_DATE,
+                CustomerId = salesOrder.COM_CUSTOMER_ID,
+
+                CustomerName = await _context.Customers
+                    .Where(c => c.COM_CUSTOMER_ID == salesOrder.COM_CUSTOMER_ID)
+                    .Select(c => c.CUSTOMER_NAME)
+                    .FirstOrDefaultAsync() ?? string.Empty,
+
+                Address = salesOrder.ADDRESS,
+
+                GrandTotal = salesOrder.Items.Sum(i =>
+                    i.QUANTITY * i.PRICE),
+
+                Items = salesOrder.Items.Select(i => new SalesOrderItemResponse
+                {
+                    SalesOrderLineItemId = i.SALES_SO_LITEM_ID,
+                    ItemName = i.ITEM_NAME,
+                    Quantity = i.QUANTITY,
+                    Price = i.PRICE,
+                    Total = i.QUANTITY * i.PRICE
+                }).ToList()
+            };
+
+            return Ok(result);
         }
         [HttpPost]
         public async Task<IActionResult> CreateSalesOrder(CreateSalesOrderRequest request)
@@ -47,7 +135,7 @@ namespace SalesOrderService.Controllers
             // Validasi SO No
             if (string.IsNullOrWhiteSpace(request.SO_NO))
             {
-                return BadRequest("SO No tidak boleh kosong.");
+                return BadRequestError("SO No tidak boleh kosong.");
             }
 
             // Cek SO No duplikat
@@ -56,19 +144,19 @@ namespace SalesOrderService.Controllers
 
             if (existingSO)
             {
-                return Conflict("SO No sudah digunakan.");
+                return ConflictError("SO No sudah digunakan.");
             }
 
             // Validasi Order Date
             if (!request.ORDER_DATE.HasValue)
             {
-                return BadRequest("Order Date tidak boleh kosong.");
+                return BadRequestError("Order Date tidak boleh kosong.");
             }
 
             // Validasi Customer
             if (!request.COM_CUSTOMER_ID.HasValue)
             {
-                return BadRequest("Customer harus dipilih.");
+                return BadRequestError("Customer harus dipilih.");
             }
 
             var customerExists = await _context.Customers
@@ -76,13 +164,13 @@ namespace SalesOrderService.Controllers
 
             if (!customerExists)
             {
-                return NotFound("Customer tidak ditemukan.");
+                return NotFoundError("Customer tidak ditemukan.");
             }
 
             // Validasi Items
             if (request.Items == null || request.Items.Count == 0)
             {
-                return BadRequest("Minimal harus ada 1 item.");
+                return BadRequestError("Minimal harus ada 1 item.");
             }
 
             // Validasi setiap item
@@ -90,17 +178,17 @@ namespace SalesOrderService.Controllers
             {
                 if (string.IsNullOrWhiteSpace(item.ITEM_NAME))
                 {
-                    return BadRequest("Nama item tidak boleh kosong.");
+                    return BadRequestError("Nama item tidak boleh kosong.");
                 }
 
                 if (item.QUANTITY <= 0)
                 {
-                    return BadRequest("Quantity harus lebih dari 0.");
+                    return BadRequestError("Quantity harus lebih dari 0.");
                 }
 
                 if (item.PRICE <= 0)
                 {
-                    return BadRequest("Price harus lebih dari 0.");
+                    return BadRequestError("Price harus lebih dari 0.");
                 }
             }
 
@@ -141,7 +229,9 @@ namespace SalesOrderService.Controllers
 
                 // Commit
                 await transaction.CommitAsync();
-
+                // Hitung Grand Total di Sales Order Service
+                var grandTotal = request.Items.Sum(item =>
+                    item.QUANTITY * item.PRICE);
                 return StatusCode(201, new
                 {
                     success = true,
@@ -175,13 +265,13 @@ namespace SalesOrderService.Controllers
 
             if (salesOrder == null)
             {
-                return NotFound("Sales Order tidak ditemukan.");
+                return NotFoundError("Sales Order tidak ditemukan.");
             }
 
             // Validasi SO No
             if (string.IsNullOrWhiteSpace(request.SO_NO))
             {
-                return BadRequest("SO No tidak boleh kosong.");
+                return BadRequestError("SO No tidak boleh kosong.");
             }
 
             // Cek SO No duplikat
@@ -192,19 +282,19 @@ namespace SalesOrderService.Controllers
 
             if (existingSO)
             {
-                return Conflict("SO No sudah digunakan.");
+                return ConflictError("SO No sudah digunakan.");
             }
 
             // Validasi Order Date
             if (!request.ORDER_DATE.HasValue)
             {
-                return BadRequest("Order Date tidak boleh kosong.");
+                return BadRequestError("Order Date tidak boleh kosong.");
             }
 
             // Validasi Customer
             if (!request.COM_CUSTOMER_ID.HasValue)
             {
-                return BadRequest("Customer harus dipilih.");
+                return BadRequestError("Customer harus dipilih.");
             }
 
             var customerExists = await _context.Customers
@@ -213,13 +303,13 @@ namespace SalesOrderService.Controllers
 
             if (!customerExists)
             {
-                return NotFound("Customer tidak ditemukan.");
+                return NotFoundError("Customer tidak ditemukan.");
             }
 
             // Validasi Items
             if (request.Items == null || request.Items.Count == 0)
             {
-                return BadRequest("Minimal harus ada 1 item.");
+                return BadRequestError("Minimal harus ada 1 item.");
             }
 
             // Validasi setiap item
@@ -227,17 +317,17 @@ namespace SalesOrderService.Controllers
             {
                 if (string.IsNullOrWhiteSpace(item.ITEM_NAME))
                 {
-                    return BadRequest("Nama item tidak boleh kosong.");
+                    return BadRequestError("Nama item tidak boleh kosong.");
                 }
 
                 if (item.QUANTITY <= 0)
                 {
-                    return BadRequest("Quantity harus lebih dari 0.");
+                    return BadRequestError("Quantity harus lebih dari 0.");
                 }
 
                 if (item.PRICE <= 0)
                 {
-                    return BadRequest("Price harus lebih dari 0.");
+                    return BadRequestError("Price harus lebih dari 0.");
                 }
             }
 
@@ -293,6 +383,7 @@ namespace SalesOrderService.Controllers
                 });
             }
         }
+
         // DELETE: api/orders/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteSalesOrder(int id)
@@ -304,7 +395,7 @@ namespace SalesOrderService.Controllers
 
             if (salesOrder == null)
             {
-                return NotFound("Sales Order tidak ditemukan.");
+                return NotFoundError("Sales Order tidak ditemukan.");
             }
 
             // Mulai transaksi
@@ -341,6 +432,149 @@ namespace SalesOrderService.Controllers
                               ?? ex.Message
                 });
             }
+        }
+        // GET: api/orders/export
+        [HttpGet("export")]
+        public async Task<IActionResult> ExportSalesOrders(
+            [FromQuery] string? keyword,
+            [FromQuery] DateTime? orderDate)
+        {
+            var query = _context.SalesOrders
+                .Include(s => s.Items)
+                .AsQueryable();
+
+            // Filter keyword
+            if (!string.IsNullOrWhiteSpace(keyword))
+            {
+                keyword = keyword.Trim();
+
+                query = query.Where(s =>
+                    s.SO_NO.Contains(keyword) ||
+                    s.ADDRESS.Contains(keyword) ||
+                    _context.Customers.Any(c =>
+                        c.COM_CUSTOMER_ID == s.COM_CUSTOMER_ID &&
+                        c.CUSTOMER_NAME.Contains(keyword)
+                    )
+                );
+            }
+
+            // Filter tanggal
+            if (orderDate.HasValue)
+            {
+                query = query.Where(s =>
+                    s.ORDER_DATE.Date == orderDate.Value.Date);
+            }
+
+            var salesOrders = await query
+                .OrderBy(s => s.ORDER_DATE)
+                .ToListAsync();
+
+            using var workbook = new XLWorkbook();
+
+            var worksheet = workbook.Worksheets.Add("Sales Orders");
+
+            // Header Excel
+            worksheet.Cell(1, 1).Value = "SO Number";
+            worksheet.Cell(1, 2).Value = "Order Date";
+            worksheet.Cell(1, 3).Value = "Customer Name";
+            worksheet.Cell(1, 4).Value = "Address";
+
+            // Style header
+            worksheet.Range(1, 1, 1, 4).Style.Font.Bold = true;
+
+            int row = 2;
+
+            foreach (var salesOrder in salesOrders)
+            {
+                var customerName = await _context.Customers
+                    .Where(c =>
+                        c.COM_CUSTOMER_ID == salesOrder.COM_CUSTOMER_ID)
+                    .Select(c => c.CUSTOMER_NAME)
+                    .FirstOrDefaultAsync();
+
+                worksheet.Cell(row, 1).Value = salesOrder.SO_NO;
+                worksheet.Cell(row, 2).Value = salesOrder.ORDER_DATE;
+                worksheet.Cell(row, 2).Style.DateFormat.Format = "dd/MM/yyyy";
+                worksheet.Cell(row, 3).Value = customerName ?? string.Empty;
+                worksheet.Cell(row, 4).Value = salesOrder.ADDRESS;
+
+                row++;
+            }
+
+            // Sesuaikan lebar kolom
+            worksheet.Columns().AdjustToContents();
+
+            using var stream = new MemoryStream();
+
+            workbook.SaveAs(stream);
+
+            stream.Position = 0;
+
+            var fileName =
+                $"SalesOrder_{DateTime.Now:yyyyMMdd}.xlsx";
+
+            return File(
+                stream.ToArray(),
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                fileName);
+        }
+        // POST: api/orders/calculate
+        [HttpPost("calculate")]
+        public IActionResult CalculateSalesOrder(
+            [FromBody] CreateSalesOrderRequest request)
+        {
+            if (request.Items == null || request.Items.Count == 0)
+            {
+                return Ok(new
+                {
+                    grandTotal = 0
+                });
+            }
+
+            foreach (var item in request.Items)
+            {
+                if (item.QUANTITY <= 0 || item.PRICE <= 0)
+                {
+                    return BadRequestError("Quantity dan Price harus lebih dari 0.");
+                }
+            }
+
+            var grandTotal = request.Items.Sum(item =>
+                item.QUANTITY * item.PRICE);
+
+            return Ok(new
+            {
+                grandTotal = grandTotal
+            });
+        }
+    private IActionResult BadRequestError(string message)
+        {
+            return BadRequest(new
+            {
+                success = false,
+                message = message,
+                errors = new[] { message }
+            });
+        }
+
+        private IActionResult NotFoundError(string message)
+        {
+            return NotFound(new
+            {
+                success = false,
+                message = message,
+                errors = new[] { message }
+            });
+        }
+
+        private IActionResult ConflictError(string message)
+        {
+            return Conflict(new
+            {
+                success = false,
+                message = message,
+                errors = new[] { message }
+            });
         }
     }
 }

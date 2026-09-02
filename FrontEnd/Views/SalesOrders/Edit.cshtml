@@ -1,0 +1,823 @@
+﻿@model FrontEnd.Models.CreateSalesOrderRequest
+
+@{
+    ViewData["Title"] = "Edit Sales Order";
+
+    var customers = ViewBag.Customers as List<FrontEnd.Models.CustomerResponse>
+                     ?? new List<FrontEnd.Models.CustomerResponse>();
+
+    var salesOrderId = ViewBag.SalesOrderId;
+}
+
+<div class="container-fluid px-4 py-4">
+
+    <!-- Page Header -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+
+        <div>
+            <h2 class="fw-bold mb-1">Edit Sales Order</h2>
+
+            <p class="text-muted mb-0">
+                Perbarui informasi Sales Order dan detail item
+            </p>
+        </div>
+
+        <a asp-action="Index"
+           class="btn btn-outline-secondary">
+            ← Kembali
+        </a>
+
+    </div>
+
+
+    <form asp-action="Edit"
+          asp-route-id="@salesOrderId"
+          method="post">
+
+        @Html.AntiForgeryToken()
+
+
+        <!-- Order Information -->
+        <div class="card border-0 shadow-sm mb-4">
+
+            <div class="card-header bg-white border-0 px-4 py-3">
+
+                <h5 class="fw-semibold mb-1">
+                    Order Information
+                </h5>
+
+                <small class="text-muted">
+                    Informasi utama Sales Order
+                </small>
+
+            </div>
+
+
+            <div class="card-body px-4 pb-4">
+
+                <div class="row g-3">
+
+                    <!-- SO Number -->
+                    <div class="col-md-6">
+
+                        <label class="form-label fw-semibold">
+                            SO No
+                        </label>
+
+                        <input type="text"
+                               class="form-control bg-light"
+                               value="@Model.SO_NO"
+                               readonly />
+
+                        <input type="hidden"
+                               asp-for="SO_NO" />
+
+                        <small class="text-muted">
+                            Nomor Sales Order tidak dapat diubah.
+                        </small>
+
+                    </div>
+
+
+                    <!-- Order Date -->
+                    <div class="col-md-6">
+
+                        <label asp-for="ORDER_DATE"
+                               class="form-label fw-semibold">
+                            Order Date
+                        </label>
+
+                        <input asp-for="ORDER_DATE"
+                               type="date"
+                               class="form-control" />
+
+                        <span asp-validation-for="ORDER_DATE"
+                              class="text-danger small">
+                        </span>
+
+                    </div>
+
+
+                    <!-- Customer -->
+                    <div class="col-md-6">
+
+                        <label asp-for="COM_CUSTOMER_ID"
+                               class="form-label fw-semibold">
+                            Customer
+                        </label>
+
+                        <select asp-for="COM_CUSTOMER_ID"
+                                class="form-select">
+
+                            <option value="">
+                                -- Pilih Customer --
+                            </option>
+
+                            @foreach (var customer in customers)
+                            {
+                                <option value="@customer.COM_CUSTOMER_ID">
+                                    @customer.CUSTOMER_NAME
+                                </option>
+                            }
+
+                        </select>
+
+                        <span asp-validation-for="COM_CUSTOMER_ID"
+                              class="text-danger small">
+                        </span>
+
+                    </div>
+
+
+                    <!-- Address -->
+                    <div class="col-md-6">
+
+                        <label asp-for="ADDRESS"
+                               class="form-label fw-semibold">
+                            Address
+                        </label>
+
+                        <input asp-for="ADDRESS"
+                               class="form-control"
+                               placeholder="Masukkan alamat customer" />
+
+                        <span asp-validation-for="ADDRESS"
+                              class="text-danger small">
+                        </span>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- Items -->
+        <div class="card border-0 shadow-sm mb-4">
+
+            <div class="card-header bg-white border-0 px-4 py-3">
+
+                <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+
+                    <div>
+                        <h5 class="fw-semibold mb-1">
+                            Order Items
+                        </h5>
+
+                        <small class="text-muted">
+                            Item lama dapat diedit, dihapus, atau ditambahkan
+                        </small>
+                    </div>
+
+                    <div class="d-flex align-items-center gap-2">
+
+                        <span class="badge bg-light text-dark border">
+                            <span id="itemCount">@Model.Items.Count</span> Item
+                        </span>
+
+                        <button type="button"
+                                class="btn btn-sm btn-primary"
+                                id="addItemButton">
+                            + Add Item
+                        </button>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div class="card-body p-0">
+
+                <div class="table-responsive">
+
+                    <table class="table table-hover align-middle mb-0">
+
+                        <thead class="table-light">
+
+                            <tr>
+
+                                <th class="ps-4 text-center"
+                                    style="width: 70px;">
+                                    #
+                                </th>
+
+                                <th>
+                                    Item Name
+                                </th>
+
+                                <th style="width: 180px;">
+                                    Quantity
+                                </th>
+
+                                <th style="width: 230px;">
+                                    Price
+                                </th>
+
+                                <th class="text-center"
+                                    style="width: 100px;">
+                                    Action
+                                </th>
+
+                            </tr>
+
+                        </thead>
+
+
+                        <tbody id="itemsBody">
+
+                            @for (int i = 0; i < Model.Items.Count; i++)
+                            {
+                                <tr>
+
+                                    <td class="ps-4 text-center text-muted item-number">
+                                        @(i + 1)
+                                    </td>
+
+
+                                    <td>
+
+                                        <input asp-for="Items[i].ITEM_NAME"
+                                               class="form-control ITEM_NAME"
+                                               placeholder="Nama item"
+                                               required />
+
+                                    </td>
+
+
+                                    <td>
+
+                                        <input asp-for="Items[i].QUANTITY"
+                                               type="number"
+                                               min="1"
+                                               class="form-control QUANTITY"
+                                               placeholder="0"
+                                               required />
+
+                                    </td>
+
+
+                                    <td>
+
+                                        <div class="input-group">
+
+                                            <span class="input-group-text">
+                                                Rp
+                                            </span>
+
+                                            <input asp-for="Items[i].PRICE"
+                                                   type="number"
+                                                   min="0.01"
+                                                   step="0.01"
+                                                   class="form-control PRICE"
+                                                   placeholder="0"
+                                                   value="@Model.Items[i].PRICE.ToString(System.Globalization.CultureInfo.InvariantCulture)"
+                                                   required />
+
+                                        </div>
+
+                                    </td>
+
+
+                                    <td class="text-center">
+
+                                        <button type="button"
+                                                class="btn btn-sm btn-outline-danger delete-item"
+                                                title="Hapus item">
+                                            🗑
+                                        </button>
+
+                                    </td>
+
+                                </tr>
+                            }
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+
+                <!-- Empty Item State -->
+                <div id="emptyItemsMessage"
+                     class="text-center py-4 text-muted"
+                     style="display: none;">
+
+                    <div class="mb-2">
+                        Belum ada item.
+                    </div>
+
+                    <small>
+                        Klik "Add Item" untuk menambahkan item.
+                    </small>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- Grand Total -->
+        <div class="card border-0 shadow-sm mb-4">
+
+            <div class="card-body px-4 py-3">
+
+                <div class="d-flex justify-content-between align-items-center">
+
+                    <div>
+
+                        <small class="text-muted">
+                            Grand Total
+                        </small>
+
+                        <div class="fw-semibold">
+                            Total keseluruhan Sales Order
+                        </div>
+
+                    </div>
+
+
+                    <div class="text-end">
+
+                        <div class="fs-4 fw-bold">
+                            Rp <span id="grandTotal">0</span>
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- Action Buttons -->
+        <div class="d-flex justify-content-end gap-2">
+
+            <a asp-action="Index"
+               class="btn btn-outline-secondary px-4">
+                Batal
+            </a>
+
+            <button type="submit"
+                    class="btn btn-primary px-4">
+                Update Sales Order
+            </button>
+
+        </div>
+
+    </form>
+
+</div>
+
+
+@section Scripts {
+
+    <partial name="_ValidationScriptsPartial" />
+
+    <script>
+
+        /*
+         * ============================================================
+         * ITEM MANAGEMENT
+         * ============================================================
+         *
+         * JavaScript hanya digunakan untuk:
+         * - menambah baris item
+         * - menghapus baris item
+         * - merapikan index Items[i]
+         * - meminta Grand Total kepada backend
+         *
+         * Tidak melakukan perhitungan QUANTITY * PRICE.
+         */
+
+
+        const itemsBody =
+            document.getElementById("itemsBody");
+
+        const addItemButton =
+            document.getElementById("addItemButton");
+
+        const itemCount =
+            document.getElementById("itemCount");
+
+        const emptyItemsMessage =
+            document.getElementById("emptyItemsMessage");
+
+
+        /*
+         * Update nomor item dan nama input.
+         *
+         * Contoh:
+         *
+         * Items[0].ITEM_NAME
+         * Items[0].QUANTITY
+         * Items[0].PRICE
+         *
+         * Items[1].ITEM_NAME
+         * Items[1].QUANTITY
+         * Items[1].PRICE
+         *
+         * dan seterusnya.
+         *
+         * Ini penting agar ASP.NET Core Model Binding
+         * menerima List<...> dengan benar setelah item dihapus.
+         */
+
+        function renumberItems() {
+
+            const rows =
+                itemsBody.querySelectorAll("tr");
+
+
+            rows.forEach((row, index) => {
+
+                /*
+                 * Nomor tampilan
+                 */
+
+                const number =
+                    row.querySelector(".item-number");
+
+                if (number) {
+                    number.textContent = index + 1;
+                }
+
+
+                /*
+                 * Update nama input
+                 */
+
+                const itemName =
+                    row.querySelector(".ITEM_NAME");
+
+                if (itemName) {
+                    itemName.name =
+                        `Items[${index}].ITEM_NAME`;
+
+                    itemName.id =
+                        `Items_${index}__ITEM_NAME`;
+                }
+
+
+                const quantity =
+                    row.querySelector(".QUANTITY");
+
+                if (quantity) {
+                    quantity.name =
+                        `Items[${index}].QUANTITY`;
+
+                    quantity.id =
+                        `Items_${index}__QUANTITY`;
+                }
+
+
+                const price =
+                    row.querySelector(".PRICE");
+
+                if (price) {
+                    price.name =
+                        `Items[${index}].PRICE`;
+
+                    price.id =
+                        `Items_${index}__PRICE`;
+                }
+
+            });
+
+
+            /*
+             * Update jumlah item
+             */
+
+            itemCount.textContent =
+                rows.length;
+
+
+            /*
+             * Tampilkan pesan jika tidak ada item.
+             */
+
+            if (rows.length === 0) {
+
+                emptyItemsMessage.style.display =
+                    "block";
+
+            }
+            else {
+
+                emptyItemsMessage.style.display =
+                    "none";
+
+            }
+
+        }
+
+
+        /*
+         * Membuat baris item baru.
+         */
+
+        function addItem() {
+
+            const row =
+                document.createElement("tr");
+
+
+            row.innerHTML = `
+
+                <td class="ps-4 text-center text-muted item-number">
+                    1
+                </td>
+
+                <td>
+
+                    <input type="text"
+                           class="form-control ITEM_NAME"
+                           placeholder="Nama item"
+                           required />
+
+                </td>
+
+                <td>
+
+                    <input type="number"
+                           min="1"
+                           class="form-control QUANTITY"
+                           placeholder="0"
+                           required />
+
+                </td>
+
+                <td>
+
+                    <div class="input-group">
+
+                        <span class="input-group-text">
+                            Rp
+                        </span>
+
+                        <input type="number"
+                               min="0.01"
+                               step="0.01"
+                               class="form-control PRICE"
+                               placeholder="0"
+                               required />
+
+                    </div>
+
+                </td>
+
+                <td class="text-center">
+
+                    <button type="button"
+                            class="btn btn-sm btn-outline-danger delete-item"
+                            title="Hapus item">
+                        🗑
+                    </button>
+
+                </td>
+
+            `;
+
+
+            itemsBody.appendChild(row);
+
+
+            /*
+             * Rapikan index setelah item ditambahkan.
+             */
+
+            renumberItems();
+
+
+            /*
+             * Hitung ulang Grand Total melalui backend.
+             */
+
+            calculateGrandTotal();
+
+
+            /*
+             * Fokus ke Item Name item baru.
+             */
+
+            row.querySelector(".ITEM_NAME")?.focus();
+
+        }
+
+
+        /*
+         * Tombol Add Item
+         */
+
+        addItemButton.addEventListener(
+            "click",
+            function () {
+
+                addItem();
+
+            }
+        );
+
+
+        /*
+         * Tombol Delete Item.
+         *
+         * Tidak menggunakan popup karena specification
+         * menyatakan delete item pada form tidak memerlukan
+         * popup konfirmasi.
+         */
+
+        itemsBody.addEventListener(
+            "click",
+            function (event) {
+
+                const deleteButton =
+                    event.target.closest(".delete-item");
+
+
+                if (!deleteButton) {
+                    return;
+                }
+
+
+                const row =
+                    deleteButton.closest("tr");
+
+
+                if (!row) {
+                    return;
+                }
+
+
+                row.remove();
+
+
+                /*
+                 * Rapikan kembali index.
+                 */
+
+                renumberItems();
+
+
+                /*
+                 * Hitung ulang Grand Total melalui backend.
+                 */
+
+                calculateGrandTotal();
+
+            }
+        );
+
+
+        /*
+         * ============================================================
+         * GRAND TOTAL
+         * ============================================================
+         *
+         * Perhitungan dilakukan SalesOrderService.
+         *
+         * Frontend TIDAK menghitung:
+         *
+         * quantity * price
+         *
+         * Frontend hanya mengirim item ke backend dan
+         * menampilkan grandTotal dari response.
+         */
+
+
+        async function calculateGrandTotal() {
+
+            const rows =
+                document.querySelectorAll("#itemsBody tr");
+
+            const items = [];
+
+
+            rows.forEach(row => {
+
+                const itemName =
+                    row.querySelector(".ITEM_NAME")?.value || "";
+
+
+                const quantity =
+                    parseInt(
+                        row.querySelector(".QUANTITY")?.value || "0"
+                    );
+
+
+                const price =
+                    parseFloat(
+                        row.querySelector(".PRICE")?.value || "0"
+                    );
+
+
+                items.push({
+
+                    ITEM_NAME: itemName,
+
+                    QUANTITY: quantity,
+
+                    PRICE: price
+
+                });
+
+            });
+
+
+            try {
+
+                const response =
+                    await fetch(
+                        "/SalesOrders/Calculate",
+                        {
+                            method: "POST",
+
+                            headers: {
+                                "Content-Type":
+                                    "application/json"
+                            },
+
+                            body: JSON.stringify({
+                                Items: items
+                            })
+                        }
+                    );
+
+
+                if (!response.ok) {
+                    return;
+                }
+
+
+                const result =
+                    await response.json();
+
+
+                document.getElementById("grandTotal").textContent =
+                    Number(result.grandTotal)
+                        .toLocaleString("id-ID");
+
+            }
+            catch (error) {
+
+                console.error(
+                    "Gagal menghitung Grand Total:",
+                    error
+                );
+
+            }
+
+        }
+
+
+        /*
+         * Ketika Quantity atau Price berubah,
+         * minta backend menghitung ulang Grand Total.
+         */
+
+        document.addEventListener(
+            "input",
+            function (event) {
+
+                if (
+                    event.target.classList.contains("QUANTITY") ||
+                    event.target.classList.contains("PRICE")
+                ) {
+
+                    calculateGrandTotal();
+
+                }
+
+            }
+        );
+
+
+        /*
+         * Saat halaman Edit pertama kali dibuka:
+         *
+         * 1. Rapikan index item
+         * 2. Hitung Grand Total dari backend
+         */
+
+        document.addEventListener(
+            "DOMContentLoaded",
+            function () {
+
+                renumberItems();
+
+                calculateGrandTotal();
+
+            }
+        );
+
+    </script>
+
+}

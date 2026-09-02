@@ -1,0 +1,397 @@
+﻿@model List<FrontEnd.Models.SalesOrderResponse>
+
+@{
+    ViewData["Title"] = "Sales Order";
+}
+
+<div class="container-fluid px-4 py-4">
+
+    <!-- Page Header -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+
+        <div>
+            <h2 class="fw-bold mb-1">Sales Order</h2>
+            <p class="text-muted mb-0">
+                Kelola data Sales Order dan transaksi penjualan
+            </p>
+        </div>
+
+        <div class="d-flex gap-2">
+
+            <a asp-controller="SalesOrders"
+               asp-action="Create"
+               class="btn btn-primary px-3">
+                <span class="me-1">+</span> Add New
+            </a>
+
+            <a asp-action="Export"
+               asp-route-keyword="@Context.Request.Query["keyword"]"
+               asp-route-orderDate="@Context.Request.Query["orderDate"]"
+               class="btn btn-success px-3">
+                <span class="me-1">↓</span> Export Excel
+            </a>
+
+        </div>
+
+    </div>
+
+
+    <!-- Notification -->
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show shadow-sm"
+             role="alert">
+            <strong>Berhasil!</strong>
+            @TempData["Success"]
+
+            <button type="button"
+                    class="btn-close"
+                    data-bs-dismiss="alert">
+            </button>
+        </div>
+    }
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show shadow-sm"
+             role="alert">
+            <strong>Gagal!</strong>
+            @TempData["Error"]
+
+            <button type="button"
+                    class="btn-close"
+                    data-bs-dismiss="alert">
+            </button>
+        </div>
+    }
+
+    @if (ViewBag.Error != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show shadow-sm"
+             role="alert">
+
+            <strong>Error!</strong>
+            @ViewBag.Error
+
+            <button type="button"
+                    class="btn-close"
+                    data-bs-dismiss="alert">
+            </button>
+
+        </div>
+    }
+
+
+    <!-- Filter Card -->
+    <div class="card border-0 shadow-sm mb-4">
+
+        <div class="card-body p-4">
+
+            <div class="d-flex align-items-center mb-3">
+
+                <div>
+                    <h5 class="fw-semibold mb-1">
+                        Search & Filter
+                    </h5>
+
+                    <small class="text-muted">
+                        Cari Sales Order berdasarkan nomor, customer, atau tanggal
+                    </small>
+                </div>
+
+            </div>
+
+            <form asp-controller="SalesOrders"
+                  asp-action="Index"
+                  method="get">
+
+                <div class="row g-3 align-items-end">
+
+                    <div class="col-lg-5 col-md-6">
+
+                        <label class="form-label fw-semibold">
+                            Keyword
+                        </label>
+
+                        <input type="text"
+                               name="keyword"
+                               value="@ViewBag.Keyword"
+                               class="form-control"
+                               placeholder="Contoh: SO-2026-001" />
+
+                    </div>
+
+
+                    <div class="col-lg-4 col-md-6">
+
+                        <label class="form-label fw-semibold">
+                            Order Date
+                        </label>
+
+                        <input type="date"
+                               name="orderDate"
+                               value="@ViewBag.OrderDate"
+                               class="form-control" />
+
+                    </div>
+
+
+                    <div class="col-lg-3 col-md-12">
+
+                        <div class="d-flex gap-2">
+
+                            <button type="submit"
+                                    class="btn btn-primary flex-grow-1">
+                                Search
+                            </button>
+
+                            <a asp-controller="SalesOrders"
+                               asp-action="Index"
+                               class="btn btn-outline-secondary">
+                                Reset
+                            </a>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+
+    <!-- Sales Order Table -->
+    <div class="card border-0 shadow-sm">
+
+        <div class="card-header bg-white border-0 px-4 py-3">
+
+            <div class="d-flex justify-content-between align-items-center">
+
+                <div>
+                    <h5 class="fw-semibold mb-1">
+                        Sales Order List
+                    </h5>
+
+                    <small class="text-muted">
+                        Daftar Sales Order yang tersedia
+                    </small>
+                </div>
+
+                @if (Model != null)
+                {
+                    <span class="badge bg-light text-dark border">
+                        @Model.Count Order
+                    </span>
+                }
+
+            </div>
+
+        </div>
+
+
+        <div class="card-body p-0">
+
+            <div class="table-responsive">
+
+                <table class="table table-hover align-middle mb-0">
+
+                    <thead class="table-light">
+
+                        <tr>
+
+                            <th class="ps-4" style="width: 60px;">
+                                #
+                            </th>
+
+                            <th>
+                                SO Number
+                            </th>
+
+                            <th>
+                                Order Date
+                            </th>
+
+                            <th>
+                                Customer
+                            </th>
+
+                            <th>
+                                Address
+                            </th>
+
+                            <th class="text-end">
+                                Grand Total
+                            </th>
+
+                            <th class="text-center" style="width: 120px;">
+                                Action
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody>
+
+                        @if (Model != null && Model.Any())
+                        {
+                            var no = 1;
+
+                            foreach (var order in Model)
+                            {
+                                <tr>
+
+                                    <td class="ps-4 text-muted">
+                                        @no
+                                    </td>
+
+
+                                    <td>
+
+                                        <span class="fw-semibold">
+                                            @order.SO_NO
+                                        </span>
+
+                                    </td>
+
+
+                                    <td>
+
+                                        <span class="text-muted">
+                                            @order.ORDER_DATE.ToString("dd/MM/yyyy")
+                                        </span>
+
+                                    </td>
+
+
+                                    <td>
+
+                                        <span class="fw-medium">
+                                            @order.CUSTOMER_NAME
+                                        </span>
+
+                                    </td>
+
+
+                                    <td>
+
+                                        <span class="text-muted text-truncate d-inline-block"
+                                              style="max-width: 220px;"
+                                              title="@order.ADDRESS">
+                                            @order.ADDRESS
+                                        </span>
+
+                                    </td>
+
+
+                                    <td class="text-end">
+
+                                        <span class="fw-semibold">
+                                            Rp @order.GRAND_TOTAL.ToString(
+                                                                                "N0",
+                                                                                new System.Globalization.CultureInfo("id-ID")
+                                                                                )
+                                </span>
+
+                                    </td>
+
+
+                                    <td>
+
+                                        <div class="d-flex justify-content-center gap-1">
+
+                                            <a asp-controller="SalesOrders"
+                                               asp-action="Edit"
+                                               asp-route-id="@order.SALES_SO_ID"
+                                               class="btn btn-sm btn-outline-warning"
+                                               title="Edit Sales Order">
+                                                Edit
+                                            </a>
+
+
+                                            <button type="button"
+                                                    class="btn btn-sm btn-outline-danger"
+                                                    onclick="confirmDelete(@order.SALES_SO_ID, '@order.SO_NO')"
+                                                    title="Delete Sales Order">
+                                                Delete
+                                            </button>
+
+                                        </div>
+
+                                    </td>
+
+                                </tr>
+
+                                                no++;
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+
+                                <td colspan="7"
+                                    class="text-center py-5">
+
+                                    <div class="text-muted">
+
+                                        <div class="fs-1 mb-2">
+                                            📄
+                                        </div>
+
+                                        <h6 class="fw-semibold">
+                                            Tidak ada data Sales Order
+                                        </h6>
+
+                                        <p class="mb-0 small">
+                                            Belum ada Sales Order yang sesuai dengan pencarian.
+                                        </p>
+
+                                    </div>
+
+                                </td>
+
+                            </tr>
+                        }
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+@section Scripts {
+
+    <script>
+
+        function confirmDelete(id, soNo) {
+
+            if (
+                confirm(
+                    "Hapus order " +
+                    soNo +
+                    "?\n\nTindakan ini tidak dapat dibatalkan."
+                )
+            ) {
+
+                window.location.href =
+                    "/SalesOrders/Delete/" + id;
+
+            }
+
+        }
+
+    </script>
+
+}

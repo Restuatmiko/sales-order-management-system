@@ -1,0 +1,582 @@
+﻿@model FrontEnd.Models.CreateSalesOrderRequest
+
+@{
+    ViewData["Title"] = "Create Sales Order";
+
+    var customers = ViewBag.Customers as List<FrontEnd.Models.CustomerResponse>
+                     ?? new List<FrontEnd.Models.CustomerResponse>();
+}
+
+<div class="container-fluid px-4 py-4">
+
+    <!-- Page Header -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+
+        <div>
+            <h2 class="fw-bold mb-1">Create Sales Order</h2>
+
+            <p class="text-muted mb-0">
+                Buat Sales Order baru dan tambahkan detail item
+            </p>
+        </div>
+
+        <a asp-action="Index"
+           class="btn btn-outline-secondary">
+            ← Kembali
+        </a>
+
+    </div>
+
+
+    <!-- Error -->
+    @if (ViewBag.Error != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show shadow-sm"
+             role="alert">
+
+            <strong>Gagal!</strong>
+            @ViewBag.Error
+
+            <button type="button"
+                    class="btn-close"
+                    data-bs-dismiss="alert">
+            </button>
+
+        </div>
+    }
+
+
+    <form asp-action="Create"
+          method="post">
+
+        @Html.AntiForgeryToken()
+
+
+        <!-- Order Information -->
+        <div class="card border-0 shadow-sm mb-4">
+
+            <div class="card-header bg-white border-0 px-4 py-3">
+
+                <h5 class="fw-semibold mb-1">
+                    Order Information
+                </h5>
+
+                <small class="text-muted">
+                    Informasi utama Sales Order
+                </small>
+
+            </div>
+
+
+            <div class="card-body px-4 pb-4">
+
+                <div class="row g-3">
+
+                    <!-- Order Number -->
+                    <div class="col-md-6">
+
+                        <label class="form-label fw-semibold">
+                            Order Number *
+                        </label>
+
+                        <input asp-for="SO_NO"
+                               class="form-control"
+                               placeholder="Contoh: SO-2026-001" />
+
+                        <span asp-validation-for="SO_NO"
+                              class="text-danger small">
+                        </span>
+
+                    </div>
+
+
+                    <!-- Order Date -->
+                    <div class="col-md-6">
+
+                        <label class="form-label fw-semibold">
+                            Order Date *
+                        </label>
+
+                        <input asp-for="ORDER_DATE"
+                               type="date"
+                               class="form-control" />
+
+                        <span asp-validation-for="ORDER_DATE"
+                              class="text-danger small">
+                        </span>
+
+                    </div>
+
+
+                    <!-- Customer -->
+                    <div class="col-md-6">
+
+                        <label class="form-label fw-semibold">
+                            Customer *
+                        </label>
+
+                        <select asp-for="COM_CUSTOMER_ID"
+                                class="form-select">
+
+                            <option value="">
+                                -- Pilih Pelanggan --
+                            </option>
+
+                            @foreach (var customer in customers)
+                            {
+                                <option value="@customer.COM_CUSTOMER_ID">
+                                    @customer.CUSTOMER_NAME
+                                </option>
+                            }
+
+                        </select>
+
+                        <span asp-validation-for="COM_CUSTOMER_ID"
+                              class="text-danger small">
+                        </span>
+
+                    </div>
+
+
+                    <!-- Address -->
+                    <div class="col-md-6">
+
+                        <label class="form-label fw-semibold">
+                            Address
+                        </label>
+
+                        <input asp-for="ADDRESS"
+                               class="form-control"
+                               placeholder="Masukkan alamat customer" />
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- Order Items -->
+        <div class="card border-0 shadow-sm mb-4">
+
+            <div class="card-header bg-white border-0 px-4 py-3">
+
+                <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2">
+
+                    <div>
+
+                        <h5 class="fw-semibold mb-1">
+                            Order Items
+                        </h5>
+
+                        <small class="text-muted">
+                            Tambahkan minimal satu item ke dalam Sales Order
+                        </small>
+
+                    </div>
+
+
+                    <button type="button"
+                            class="btn btn-primary"
+                            onclick="addItem()">
+                        + Add Item
+                    </button>
+
+                </div>
+
+            </div>
+
+
+            <div class="card-body p-0">
+
+                <div class="table-responsive">
+
+                    <table class="table table-hover align-middle mb-0">
+
+                        <thead class="table-light">
+
+                            <tr>
+
+                                <th class="ps-4 text-center"
+                                    style="width: 70px;">
+                                    #
+                                </th>
+
+                                <th>
+                                    Item Name *
+                                </th>
+
+                                <th style="width: 180px;">
+                                    Qty *
+                                </th>
+
+                                <th style="width: 230px;">
+                                    Price *
+                                </th>
+
+                                <th class="text-center"
+                                    style="width: 100px;">
+                                    Action
+                                </th>
+
+                            </tr>
+
+                        </thead>
+
+
+                        <tbody id="itemsBody">
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+
+                <!-- Empty State -->
+                <div id="emptyItemMessage"
+                     class="text-center text-muted py-4">
+
+                    <div class="fs-2 mb-2">
+                        🛒
+                    </div>
+
+                    <div class="fw-semibold">
+                        Belum ada item
+                    </div>
+
+                    <small>
+                        Klik <strong>+ Add Item</strong> untuk menambahkan item.
+                    </small>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- Grand Total -->
+        <div class="card border-0 shadow-sm mb-4">
+
+            <div class="card-body px-4 py-3">
+
+                <div class="d-flex justify-content-between align-items-center">
+
+                    <div>
+
+                        <small class="text-muted">
+                            Grand Total
+                        </small>
+
+                        <div class="fw-semibold">
+                            Total keseluruhan Sales Order
+                        </div>
+
+                    </div>
+
+
+                    <div class="text-end">
+
+                        <div class="fs-4 fw-bold">
+                            Rp <span id="grandTotal">0</span>
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- Action Buttons -->
+        <div class="d-flex justify-content-end gap-2">
+
+            <a asp-action="Index"
+               class="btn btn-outline-secondary px-4">
+                Batal
+            </a>
+
+            <button type="submit"
+                    class="btn btn-success px-4">
+                💾 Save Order
+            </button>
+
+        </div>
+
+    </form>
+
+</div>
+
+
+@section Scripts {
+
+    <partial name="_ValidationScriptsPartial" />
+
+    <script>
+
+        let itemIndex = 0;
+
+
+        // ============================
+        // ADD ITEM
+        // ============================
+        function addItem() {
+
+            const tbody =
+                document.getElementById("itemsBody");
+
+            const emptyMessage =
+                document.getElementById("emptyItemMessage");
+
+            const row =
+                document.createElement("tr");
+
+            row.innerHTML = `
+                <td class="text-center text-muted item-number">
+                    ${itemIndex + 1}
+                </td>
+
+                <td>
+                    <input type="text"
+                           name="Items[${itemIndex}].ITEM_NAME"
+                           class="form-control ITEM_NAME"
+                           placeholder="Nama item"
+                           required />
+                </td>
+
+                <td>
+                    <input type="number"
+                           name="Items[${itemIndex}].QUANTITY"
+                           class="form-control QUANTITY"
+                           min="1"
+                           placeholder="0"
+                           required />
+                </td>
+
+                <td>
+                    <div class="input-group">
+                        <span class="input-group-text">
+                            Rp
+                        </span>
+
+                        <input type="number"
+                               name="Items[${itemIndex}].PRICE"
+                               class="form-control PRICE"
+                               min="1"
+                               step="0.01"
+                               placeholder="0"
+                               required />
+                    </div>
+                </td>
+
+                <td class="text-center">
+                    <button type="button"
+                            class="btn btn-sm btn-outline-danger"
+                            onclick="removeItem(this)"
+                            title="Hapus item">
+                        Delete
+                    </button>
+                </td>
+            `;
+
+            tbody.appendChild(row);
+
+            itemIndex++;
+
+            emptyMessage.style.display = "none";
+
+            // Minta service menghitung ulang
+            calculateGrandTotal();
+        }
+
+
+        // ============================
+        // REMOVE ITEM
+        // ============================
+        function removeItem(button) {
+
+            button
+                .closest("tr")
+                .remove();
+
+            renumberItems();
+
+            const rows =
+                document.querySelectorAll("#itemsBody tr");
+
+            if (rows.length === 0) {
+
+                document.getElementById(
+                    "emptyItemMessage"
+                ).style.display = "block";
+
+            }
+
+            // Minta service menghitung ulang
+            calculateGrandTotal();
+        }
+
+
+        // ============================
+        // RENUMBER ITEM
+        // ============================
+        function renumberItems() {
+
+            const rows =
+                document.querySelectorAll("#itemsBody tr");
+
+            rows.forEach((row, index) => {
+
+                row.children[0].innerText =
+                    index + 1;
+
+            });
+
+        }
+
+
+        // ============================
+        // CALCULATE GRAND TOTAL
+        // ============================
+        async function calculateGrandTotal() {
+
+            const rows =
+                document.querySelectorAll("#itemsBody tr");
+
+            const items = [];
+
+
+            // Ambil data item dari form
+            rows.forEach(row => {
+
+                const itemName =
+                    row.querySelector(
+                        'input[name*=".ITEM_NAME"]'
+                    )?.value || "";
+
+                const quantity =
+                    parseInt(
+                        row.querySelector(
+                            'input[name*=".QUANTITY"]'
+                        )?.value
+                    ) || 0;
+
+                const price =
+                    parseFloat(
+                        row.querySelector(
+                            'input[name*=".PRICE"]'
+                        )?.value
+                    ) || 0;
+
+
+                items.push({
+                    ITEM_NAME: itemName,
+                    QUANTITY: quantity,
+                    PRICE: price
+                });
+
+            });
+
+
+            try {
+
+                const response =
+                    await fetch(
+                        "/SalesOrders/Calculate",
+                        {
+                            method: "POST",
+
+                            headers: {
+                                "Content-Type":
+                                    "application/json"
+                            },
+
+                            body: JSON.stringify({
+                                Items: items
+                            })
+                        }
+                    );
+
+
+                if (!response.ok) {
+
+                    console.error(
+                        "Gagal menghitung Grand Total."
+                    );
+
+                    return;
+                }
+
+
+                const result =
+                    await response.json();
+
+
+                // Hanya menampilkan hasil dari service.
+                // Tidak melakukan perhitungan di JavaScript.
+                document.getElementById(
+                    "grandTotal"
+                ).innerText =
+                    Number(result.grandTotal)
+                        .toLocaleString("id-ID");
+
+
+            }
+            catch (error) {
+
+                console.error(
+                    "Gagal menghubungi SalesOrderService:",
+                    error
+                );
+
+            }
+
+        }
+
+
+        // ============================
+        // INPUT EVENT
+        // ============================
+        document.addEventListener(
+            "input",
+            function (event) {
+
+                if (
+                    event.target.name &&
+                    (
+                        event.target.name.includes(
+                            ".QUANTITY"
+                        ) ||
+                        event.target.name.includes(
+                            ".PRICE"
+                        )
+                    )
+                ) {
+
+                    calculateGrandTotal();
+
+                }
+
+            }
+        );
+
+
+        // ============================
+        // INITIAL LOAD
+        // ============================
+        document.addEventListener(
+            "DOMContentLoaded",
+            function () {
+
+                calculateGrandTotal();
+
+            }
+        );
+
+    </script>
+
+}
